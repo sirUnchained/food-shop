@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"foodshop/api"
 	"foodshop/configs"
 )
 
 func main() {
 	fmt.Println("hello world !!")
-	fmt.Println(configs.GetConfigs())
+	cfg := configs.GetConfigs()
+	api.InitServer(&cfg)
+	// fmt.Println(configs.GetConfigs())
 }
