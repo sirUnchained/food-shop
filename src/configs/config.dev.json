@@ -1,0 +1,21 @@
+{
+  "server": {
+    "port": ":4000",
+    "host": "localhost"
+  },
+  "postgres": {
+    "host": "localhost",
+    "port": "5432",
+    "username": "postgres",
+    "password": "11111111",
+    "dbname": "food-shop"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379"
+  },
+  "jwt": {
+    "secretKey": "shhh_its_secret",
+    "expiresIn": "1d"
+  }
+}
