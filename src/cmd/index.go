@@ -1,14 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"foodshop/api"
 	"foodshop/configs"
+	"foodshop/data/postgres"
 )
 
 func main() {
-	fmt.Println("hello world !!")
 	cfg := configs.GetConfigs()
 	api.InitServer(cfg)
-	// fmt.Println(configs.GetConfigs())
+
+	// config postgres
+	err := postgres.InitPostgres(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer postgres.CloseDb()
 }
