@@ -36,11 +36,11 @@ type jwt struct {
 	ExpiresIn string
 }
 
-func GetConfigs() Configs {
+func GetConfigs() *Configs {
 	env := os.Getenv("APP_ENV")
 	address := getFileAddress(&env)
 	cfg := readConfigFileAndGet(&address)
-	return cfg
+	return &cfg
 }
 
 func getFileAddress(env *string) string {

@@ -9,6 +9,6 @@ import (
 func main() {
 	fmt.Println("hello world !!")
 	cfg := configs.GetConfigs()
-	api.InitServer(&cfg)
+	api.InitServer(cfg)
 	// fmt.Println(configs.GetConfigs())
 }
