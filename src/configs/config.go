@@ -29,6 +29,7 @@ type postgres struct {
 type redis struct {
 	Port string
 	Host string
+	Db   int
 }
 
 type jwt struct {
