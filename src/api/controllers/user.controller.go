@@ -1,6 +1,10 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"foodshop/api/helpers"
+
+	"github.com/gin-gonic/gin"
+)
 
 type userController struct{}
 
@@ -9,5 +13,5 @@ func GetUserController() *userController {
 }
 
 func (u *userController) GetAll(ctx *gin.Context) {
-	ctx.JSON(200, gin.H{"message": "get all users"})
+	helpers.SendResult(true, 200, "success", nil, ctx)
 }
