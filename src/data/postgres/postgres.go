@@ -14,13 +14,13 @@ var dbClient *gorm.DB
 func InitPostgres(cfg *configs.Configs) error {
 	connectionStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Postgres.Host, cfg.Postgres.Username, cfg.Postgres.Password, cfg.Postgres.Dbname, cfg.Postgres.Port)
 
-	postgresConnection, err := gorm.Open(postgres.Open(connectionStr), &gorm.Config{})
+	dbClient, err := gorm.Open(postgres.Open(connectionStr), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
 	// testing db
-	sqlDb, _ := postgresConnection.DB()
+	sqlDb, _ := dbClient.DB()
 	err = sqlDb.Ping()
 	if err != nil {
 		return err
