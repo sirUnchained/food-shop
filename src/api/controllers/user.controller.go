@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"foodshop/api/helpers"
+	"foodshop/data/redis"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,5 +16,18 @@ func GetUserController() *userController {
 }
 
 func (u *userController) GetAll(ctx *gin.Context) {
+	rc := redis.GetRedisClient()
+	fmt.Println(rc)
+	err := redis.SetInRedis(rc, ctx, "test", "users", time.Second*60)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	result, err := redis.GetFromRedis[string](redis.GetRedisClient(), ctx, "test")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+
 	helpers.SendResult(true, 200, "success", nil, ctx)
 }

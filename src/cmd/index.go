@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer redis.CloseRedis()
+	defer redis.CloseRedisClient()
 
 	api.InitServer(cfg)
 }

@@ -29,8 +29,8 @@ func InitPostgres(cfg *configs.Configs) error {
 	return nil
 }
 
-func GetDb() gorm.DB {
-	return *dbClient
+func GetDb() *gorm.DB {
+	return dbClient
 }
 
 func CloseDb() {
