@@ -14,7 +14,7 @@ import (
 var redisClient *redis.Client
 
 func InitRedis(cfg *configs.Configs) error {
-	redisClient := redis.NewClient(&redis.Options{
+	redisClient = redis.NewClient(&redis.Options{
 		Addr: fmt.Sprintf("%s:%s", cfg.Redis.Host, cfg.Redis.Port),
 		DB:   cfg.Redis.Db,
 	})
