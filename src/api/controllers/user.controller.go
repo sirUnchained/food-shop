@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"foodshop/api/helpers"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,8 @@ func GetUserController() *userController {
 
 type RegisterData struct {
 	UserName string `json:"user_name" binding:"required,alpha,min=3,max=100"`
-	Phone    string `json:"phone" binding:"required,numeric,len=11"`
+	Phone    string `json:"phone" binding:"required,iranMobile,numeric,len=11"`
+	Email    string `json:"email" binding:"required,email,max=100"`
 }
 
 func (u *userController) GetAll(ctx *gin.Context) {
@@ -22,7 +24,7 @@ func (u *userController) GetAll(ctx *gin.Context) {
 
 	err := ctx.ShouldBindJSON(&newUser)
 	if err != nil {
-		// fmt.Printf("\n\n%+v\n\n", err)
+		fmt.Printf("Error: %v\n", err)
 		helpers.SendValidationErrors(400, err.Error(), ctx)
 		return
 	}

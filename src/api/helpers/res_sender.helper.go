@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"regexp"
 
 	"github.com/gin-gonic/gin"
@@ -13,8 +12,6 @@ type resultResponse struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
-
-// type ValidationFaliedResponse struct
 
 func SendResult(ok bool, status int, msg string, data *interface{}, ctx *gin.Context) {
 	var res resultResponse
@@ -31,7 +28,9 @@ func SendValidationErrors(status int, errs string, ctx *gin.Context) {
 	pattern := regexp.MustCompile(`Error:.*?tag`)
 
 	validationErrors := pattern.FindAllString(errs, -1)
-	fmt.Println(validationErrors)
+	if len(validationErrors) == 0 {
+		validationErrors = append(validationErrors, errs)
+	}
 
 	res.Message = "Validation Failed"
 	res.Ok = false
