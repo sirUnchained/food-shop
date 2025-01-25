@@ -51,17 +51,17 @@ func SetInRedis[T any](rc *redis.Client, ctx *gin.Context, key string, value T, 
 }
 
 func GetFromRedis[T any](rc *redis.Client, ctx *gin.Context, key string) (T, error) {
-	var dest T = *new(T)
+	var data T = *new(T)
 
 	result, err := rc.Get(ctx, key).Result()
 	if err != nil {
-		return dest, err
+		return data, err
 	}
 
-	err = json.Unmarshal([]byte(result), &dest)
+	err = json.Unmarshal([]byte(result), &data)
 	if err != nil {
-		return dest, err
+		return data, err
 	}
 
-	return dest, nil
+	return data, nil
 }

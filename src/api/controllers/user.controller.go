@@ -1,10 +1,7 @@
 package controllers
 
 import (
-	"fmt"
 	"foodshop/api/helpers"
-	"foodshop/data/redis"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,17 +12,20 @@ func GetUserController() *userController {
 	return &userController{}
 }
 
-func (u *userController) GetAll(ctx *gin.Context) {
-	err := redis.SetInRedis(redis.GetRedisClient(), ctx, "test", "users", time.Second*60)
-	if err != nil {
-		fmt.Println(err)
-	}
+type RegisterData struct {
+	UserName string `json:"user_name" binding:"required,alpha,min=3,max=100"`
+	Phone    string `json:"phone" binding:"required,numeric,len=11"`
+}
 
-	result, err := redis.GetFromRedis[string](redis.GetRedisClient(), ctx, "test")
+func (u *userController) GetAll(ctx *gin.Context) {
+	var newUser RegisterData
+
+	err := ctx.ShouldBindJSON(&newUser)
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Printf("\n\n%+v\n\n", err)
+		helpers.SendValidationErrors(400, err.Error(), ctx)
+		return
 	}
-	fmt.Println(result)
 
 	helpers.SendResult(true, 200, "success", nil, ctx)
 }
