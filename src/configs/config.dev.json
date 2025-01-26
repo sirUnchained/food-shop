@@ -16,7 +16,9 @@
     "Db": 0
   },
   "jwt": {
-    "secretKey": "shhh_its_secret",
-    "expiresIn": "1d"
+    "accessSecret": "shhh_its_access_secret",
+    "refreshSecret": "shhh_its_refresh_secret",
+    "accessTokenExpiresIn": 60,
+    "refreshTokenExpiresIn": 60
   }
 }

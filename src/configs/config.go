@@ -33,8 +33,10 @@ type redis struct {
 }
 
 type jwt struct {
-	SecretKey string
-	ExpiresIn string
+	AccessSecret          string
+	RefreshSecret         string
+	AccessTokenExpiresIn  int
+	RefreshTokenExpiresIn int
 }
 
 func GetConfigs() *Configs {
