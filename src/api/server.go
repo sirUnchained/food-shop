@@ -32,6 +32,6 @@ func initRoutes_v1(route *gin.RouterGroup) {
 func InitValidators() {
 	validation, ok := binding.Validator.Engine().(*validator.Validate)
 	if ok {
-		validation.RegisterValidation("iranMobile", validators.IranMobileValidator)
+		validation.RegisterValidation("IranMobile", validators.IranMobileValidator)
 	}
 }
