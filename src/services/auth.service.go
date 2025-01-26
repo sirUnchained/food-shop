@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"foodshop/api/dto"
 	"foodshop/configs"
 	"time"
@@ -69,4 +70,20 @@ func (a *AuthService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDetai
 	}
 
 	return newTokenDetails, nil
+}
+
+func (a *AuthService) VerifyToken(token string) (*jwt.Token, error) {
+	cfg := configs.GetConfigs()
+
+	result, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unknown err in auth service verify token func.")
+		}
+		return []byte(cfg.Jwt.AccessSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
