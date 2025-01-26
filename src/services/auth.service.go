@@ -87,3 +87,20 @@ func (a *AuthService) VerifyToken(token string) (*jwt.Token, error) {
 
 	return result, nil
 }
+
+func (a *AuthService) GetTokenClaims(token string) (claimResult map[string]interface{}, err error) {
+	result, err := a.VerifyToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := result.Claims.(jwt.MapClaims)
+	if ok && result.Valid {
+		for k, v := range claims {
+			claimResult[k] = v
+		}
+		return claimResult, nil
+	}
+
+	return nil, errors.New("error in auth service GetTokenClaims func.")
+}
