@@ -13,3 +13,14 @@ type RegisterDto struct {
 	Phone    string `json:"phone" binding:"required,IranMobile,len=11"`
 	// Captcha string `json:"captcha" binding:"required"`
 }
+
+type TokenDetailDTO struct {
+	AccessToken           string
+	RefreshToken          string
+	AccessTokenExpiresIn  int64
+	RefreshTokenExpiresIn int64
+}
+
+type TokenData struct {
+	Id int
+}
