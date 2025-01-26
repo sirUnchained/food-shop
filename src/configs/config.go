@@ -13,6 +13,8 @@ type Configs struct {
 	Jwt      jwt
 }
 
+var cfg Configs
+
 type server struct {
 	Port string
 	Host string
@@ -40,10 +42,14 @@ type jwt struct {
 }
 
 func GetConfigs() *Configs {
+	return &cfg
+}
+
+func InitConfigs() {
 	env := os.Getenv("APP_ENV")
 	address := getFileAddress(&env)
-	cfg := readConfigFileAndGet(&address)
-	return &cfg
+	res := readConfigFileAndGet(&address)
+	cfg = res
 }
 
 func getFileAddress(env *string) string {

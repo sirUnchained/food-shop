@@ -15,6 +15,12 @@ func InitServer(cfg *configs.Configs) {
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery(), middlewares.Limiter())
 
+	// Attach the config to the gin context
+	server.Use(func(ctx *gin.Context) {
+		ctx.Set("config", cfg)
+		ctx.Next()
+	})
+
 	InitValidators()
 
 	v1 := server.Group("/api/v1")
@@ -24,7 +30,6 @@ func InitServer(cfg *configs.Configs) {
 }
 
 func initRoutes_v1(route *gin.RouterGroup) {
-	// todo => before coding, follow this shit and eplain to your self.
 	routers.UserRoutes(route)
 	routers.AuthRoutes(route)
 }

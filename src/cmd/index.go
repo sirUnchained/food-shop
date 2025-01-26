@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	configs.InitConfigs()
 	cfg := configs.GetConfigs()
 
 	// config postgres
