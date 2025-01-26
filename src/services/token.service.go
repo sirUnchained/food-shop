@@ -11,7 +11,7 @@ import (
 
 type TokenService struct{}
 
-func (a *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDetailDTO, error) {
+func (ts *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDetailDTO, error) {
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
 
@@ -23,7 +23,7 @@ func (a *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDeta
 	atc["id"] = token.Id
 
 	// generate access token
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS512, atc)
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
 	var err error
 	newTokenDetails.AccessToken, err = accessToken.SignedString([]byte(cfg.Jwt.AccessSecret))
 	if err != nil {
@@ -38,7 +38,7 @@ func (a *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDeta
 	rtc["id"] = token.Id
 
 	// generate refresh token
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodES384, rtc)
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
 	newTokenDetails.RefreshToken, err = refreshToken.SignedString([]byte(cfg.Jwt.RefreshSecret))
 	if err != nil {
 		return nil, err
@@ -47,35 +47,46 @@ func (a *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDeta
 	return newTokenDetails, nil
 }
 
-func (a *TokenService) VerifyToken(token string) (*jwt.Token, error) {
+func (ts *TokenService) VerifyToken(token string) (*jwt.Token, error) {
+	// get the configuration settings
 	cfg := configs.GetConfigs()
 
-	result, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	// parse the token with a function to return the key for validation
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		// check if the signing method is HMAC
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unknown err in token service verify token func.")
+			return nil, errors.New("unexpected signing method")
 		}
+		// return the secret key for validation
 		return []byte(cfg.Jwt.AccessSecret), nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	return parsedToken, nil
 }
 
-func (a *TokenService) GetTokenClaims(token string) (claimResult map[string]interface{}, err error) {
-	result, err := a.VerifyToken(token)
+func (ts *TokenService) GetTokenClaims(token string) (map[string]interface{}, error) {
+	// initialize the result map to store claims
+	// claimsResult := map[string]interface{}{}
+	claimsResult := make(map[string]interface{})
+
+	// verify the token
+	parsedToken, err := ts.VerifyToken(token)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, ok := result.Claims.(jwt.MapClaims)
-	if ok && result.Valid {
-		for k, v := range claims {
-			claimResult[k] = v
+	// extract claims from the token
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if ok && parsedToken.Valid {
+		// copy claims to the result map
+		for key, value := range claims {
+			claimsResult[key] = value
 		}
-		return claimResult, nil
+		return claimsResult, nil
 	}
 
-	return nil, errors.New("error in token service GetTokenClaims func.")
+	return nil, errors.New("invalid token or error extracting claims")
 }
