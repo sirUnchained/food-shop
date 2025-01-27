@@ -90,7 +90,7 @@ func (ts *TokenService) GetTokenClaims(token string) (*dto.TokenData, *helpers.R
 	if !isOk && !parsedToken.Valid {
 		return nil, helpers.NewResultResponse(false, 500, "failed to parse token claims.", nil)
 	}
-	// copy claims to the result map
+	// copy claims to the result
 	if id, ok := claims["id"].(float64); ok {
 		claimsResult.Id = int(id)
 	} else {
