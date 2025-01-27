@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 	"foodshop/configs"
+	"foodshop/data/models"
 
 	"gorm.io/driver/postgres"
 
@@ -22,6 +23,12 @@ func InitPostgres(cfg *configs.Configs) error {
 	// testing db
 	sqlDb, _ := dbClient.DB()
 	err = sqlDb.Ping()
+	if err != nil {
+		return err
+	}
+
+	// auto migrate
+	err = dbClient.AutoMigrate(&models.UserModel{})
 	if err != nil {
 		return err
 	}

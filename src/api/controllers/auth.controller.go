@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/services"
 
@@ -17,13 +15,15 @@ func GetAuthController() *authController {
 
 func (a *authController) Login(ctx *gin.Context) {
 	ts := &services.TokenService{}
-	token := dto.TokenData{Id: 12}
+	au := &services.AuthService{}
 
-	res, err := ts.GenerateTokenDetail(&token)
-	if err != nil {
-		helpers.SendResult(false, 400, err.Error(), nil, ctx)
-		return
-	}
+	au.Login(ctx)
+
+	// res, err := ts.GenerateTokenDetail(&token)
+	// if err != nil {
+	// 	helpers.SendResult(false, 400, err.Error(), nil, ctx)
+	// 	return
+	// }
 
 	// jwtToken, err := ts.VerifyToken(res.AccessToken)
 	// if err != nil {
@@ -31,12 +31,12 @@ func (a *authController) Login(ctx *gin.Context) {
 	// 	return
 	// }
 
-	tokenClaim, err := ts.GetTokenClaims(res.AccessToken)
-	if err != nil {
-		helpers.SendResult(false, 400, err.Error(), nil, ctx)
-		return
-	}
-	fmt.Printf("%+v\n", tokenClaim)
+	// tokenClaim, err := ts.GetTokenClaims(res.AccessToken)
+	// if err != nil {
+	// 	helpers.SendResult(false, 400, err.Error(), nil, ctx)
+	// 	return
+	// }
+	// fmt.Printf("%+v\n", tokenClaim)
 
 	helpers.SendResult(true, 200, "done", nil, ctx)
 }
