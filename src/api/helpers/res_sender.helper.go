@@ -13,6 +13,15 @@ type ResultResponse struct {
 	Data    interface{} `json:"data"`
 }
 
+func NewResultResponse(ok bool, status int, message string, data interface{}) *ResultResponse {
+	return &ResultResponse{
+		Ok:      ok,
+		Status:  status,
+		Message: message,
+		Data:    data,
+	}
+}
+
 func SendResult(ok bool, status int, msg string, data *interface{}, ctx *gin.Context) {
 	var res ResultResponse
 	res.Data = data

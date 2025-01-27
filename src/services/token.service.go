@@ -18,7 +18,7 @@ func GetTokenService() *TokenService {
 	return &TokenService{}
 }
 
-func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Context) (*dto.TokenDetailDTO, error) {
+func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Context) (*dto.TokenDetailDTO, *helpers.ResultResponse) {
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
 
@@ -34,8 +34,7 @@ func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Con
 	var err error
 	newTokenDetails.AccessToken, err = accessToken.SignedString([]byte(cfg.Jwt.AccessSecret))
 	if err != nil {
-		helpers.SendResult(false, 500, "", nil, ctx)
-		return nil, errors.New("failed to create access token")
+		return nil, helpers.NewResultResponse(false, 500, "failed to create access token.", nil)
 	}
 
 	// set refresh token expiration time
@@ -49,13 +48,13 @@ func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Con
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
 	newTokenDetails.RefreshToken, err = refreshToken.SignedString([]byte(cfg.Jwt.RefreshSecret))
 	if err != nil {
-		return nil, err
+		return nil, helpers.NewResultResponse(false, 500, "failed to create refresh token.", nil)
 	}
 
-	return newTokenDetails, nil
+	return newTokenDetails, helpers.NewResultResponse(true, 201, "", nil)
 }
 
-func (ts *TokenService) VerifyToken(token string) (*jwt.Token, error) {
+func (ts *TokenService) VerifyToken(token string) (*jwt.Token, *helpers.ResultResponse) {
 	// get the configuration settings
 	cfg := configs.GetConfigs()
 
@@ -69,13 +68,13 @@ func (ts *TokenService) VerifyToken(token string) (*jwt.Token, error) {
 		return []byte(cfg.Jwt.AccessSecret), nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, helpers.NewResultResponse(false, 500, err.Error(), nil)
 	}
 
-	return parsedToken, nil
+	return parsedToken, helpers.NewResultResponse(true, 200, "", nil)
 }
 
-func (ts *TokenService) GetTokenClaims(token string) (map[string]interface{}, error) {
+func (ts *TokenService) GetTokenClaims(token string) (map[string]interface{}, *helpers.ResultResponse) {
 	// initialize the result map to store claims
 	// claimsResult := map[string]interface{}{}
 	claimsResult := make(map[string]interface{})
@@ -83,18 +82,18 @@ func (ts *TokenService) GetTokenClaims(token string) (map[string]interface{}, er
 	// verify the token
 	parsedToken, err := ts.VerifyToken(token)
 	if err != nil {
-		return nil, err
+		return nil, helpers.NewResultResponse(false, 500, "failed to get token claims.", nil)
 	}
 
 	// extract claims from the token
 	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if ok && parsedToken.Valid {
-		// copy claims to the result map
-		for key, value := range claims {
-			claimsResult[key] = value
-		}
-		return claimsResult, nil
+	if !ok && !parsedToken.Valid {
+		return nil, helpers.NewResultResponse(false, 500, "failed to parse token claims.", nil)
 	}
+	// copy claims to the result map
+	for key, value := range claims {
+		claimsResult[key] = value
+	}
+	return claimsResult, helpers.NewResultResponse(true, 200, "", nil)
 
-	return nil, errors.New("invalid token or error extracting claims")
 }
