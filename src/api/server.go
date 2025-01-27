@@ -15,12 +15,6 @@ func InitServer(cfg *configs.Configs) {
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery(), middlewares.Limiter())
 
-	// Attach the config to the gin context
-	server.Use(func(ctx *gin.Context) {
-		ctx.Set("config", cfg)
-		ctx.Next()
-	})
-
 	InitValidators()
 
 	v1 := server.Group("/api/v1")

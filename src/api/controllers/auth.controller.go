@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"foodshop/api/helpers"
+	"foodshop/data/models"
 	"foodshop/services"
 
 	"github.com/gin-gonic/gin"
@@ -72,4 +73,20 @@ func (a *authController) Register(ctx *gin.Context) {
 	tokens["refreshToken"] = tokenDetail.RefreshToken
 	helpers.SendResult(true, 200, "you are now authorized.", tokens, ctx)
 
+}
+
+func (a *authController) GetMe(ctx *gin.Context) {
+	user, exists := ctx.Get("user")
+	if !exists {
+		helpers.SendResult(false, 500, "somthing went wrong.", nil, ctx)
+		return
+	}
+
+	result := map[string]interface{}{}
+	result["id"] = user.(models.UserModel).ID
+	result["username"] = user.(models.UserModel).UserName
+	result["email"] = user.(models.UserModel).Email
+	result["phone"] = user.(models.UserModel).Phone
+
+	helpers.SendResult(true, 200, "", result, ctx)
 }

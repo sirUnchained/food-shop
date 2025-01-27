@@ -48,3 +48,14 @@ func SendValidationErrors(status int, errs string, ctx *gin.Context) {
 
 	ctx.JSON(status, res)
 }
+
+func SendUnAuthorizedResult(ctx *gin.Context) {
+	var res ResultResponse
+
+	res.Ok = false
+	res.Status = 401
+	res.Message = "please sign in or sign up first."
+	res.Data = nil
+
+	ctx.JSON(401, res)
+}

@@ -62,38 +62,41 @@ func (ts *TokenService) VerifyToken(token string) (*jwt.Token, *helpers.ResultRe
 	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		// check if the signing method is HMAC
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, errors.New("token is not valid")
 		}
 		// return the secret key for validation
 		return []byte(cfg.Jwt.AccessSecret), nil
 	})
 	if err != nil {
-		return nil, helpers.NewResultResponse(false, 500, err.Error(), nil)
+		return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
 	}
 
 	return parsedToken, helpers.NewResultResponse(true, 200, "", nil)
 }
 
-func (ts *TokenService) GetTokenClaims(token string) (map[string]interface{}, *helpers.ResultResponse) {
+func (ts *TokenService) GetTokenClaims(token string) (*dto.TokenData, *helpers.ResultResponse) {
 	// initialize the result map to store claims
 	// claimsResult := map[string]interface{}{}
-	claimsResult := make(map[string]interface{})
+	claimsResult := &dto.TokenData{}
 
 	// verify the token
-	parsedToken, err := ts.VerifyToken(token)
-	if err != nil {
-		return nil, helpers.NewResultResponse(false, 500, "failed to get token claims.", nil)
+	parsedToken, ok := ts.VerifyToken(token)
+	if !ok.Ok {
+		return nil, helpers.NewResultResponse(false, 400, "token is not valid, please sign in or sign up first", nil)
 	}
 
 	// extract claims from the token
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
-	if !ok && !parsedToken.Valid {
+	claims, isOk := parsedToken.Claims.(jwt.MapClaims)
+	if !isOk && !parsedToken.Valid {
 		return nil, helpers.NewResultResponse(false, 500, "failed to parse token claims.", nil)
 	}
 	// copy claims to the result map
-	for key, value := range claims {
-		claimsResult[key] = value
+	if id, ok := claims["id"].(float64); ok {
+		claimsResult.Id = int(id)
+	} else {
+		return nil, helpers.NewResultResponse(false, 500, "failed to parse token claims.", nil)
 	}
+
 	return claimsResult, helpers.NewResultResponse(true, 200, "", nil)
 
 }

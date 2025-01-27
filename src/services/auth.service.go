@@ -66,3 +66,5 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.UserModel, *helpers.Re
 
 	return newUser, helpers.NewResultResponse(true, 201, "registration successful", newUser)
 }
+
+func (a *AuthService) GetMe() {}
