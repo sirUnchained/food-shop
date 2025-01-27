@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"foodshop/api/helpers"
 	"foodshop/services"
 
@@ -16,25 +17,26 @@ func GetAuthController() *authController {
 func (a *authController) Login(ctx *gin.Context) {
 	au := services.GetAuthService()
 
-	// user, err := au.Login(ctx)
-	// if err != nil {
-	// 	helpers.SendResult(false, 500, err.Error(), nil, ctx)
-	// 	return
-	// }
-
-	ts := services.GetTokenService()
-
-	tokenDetail, err := ts.GenerateTokenDetail(user, ctx)
-	if err != nil {
-		helpers.SendResult(false)
+	user, ok := au.Login(ctx)
+	if !ok.Ok {
+		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
 		return
 	}
 
-	// res, err := ts.GenerateTokenDetail(&token)
-	// if err != nil {
-	// 	helpers.SendResult(false, 400, err.Error(), nil, ctx)
-	// 	return
-	// }
+	ts := services.GetTokenService()
+
+	tokenDetail, ok := ts.GenerateTokenDetail(user, ctx)
+	if !ok.Ok {
+		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
+		return
+	}
+
+	fmt.Printf("%+v\n", tokenDetail)
+
+	tokens := map[string]string{}
+	tokens["accessToken"] = tokenDetail.AccessToken
+	tokens["refreshToken"] = tokenDetail.RefreshToken
+	helpers.SendResult(true, 200, "you are now authorized.", tokens, ctx)
 
 	// jwtToken, err := ts.VerifyToken(res.AccessToken)
 	// if err != nil {
@@ -51,8 +53,23 @@ func (a *authController) Login(ctx *gin.Context) {
 
 }
 
-// func (a *authController) Register(ctx *gin.Context) {
-// 	au := services.GetAuthService()
-// 	result := au.Register(ctx)
-// 	helpers.SendResult(result.Ok, result.Status, result.Message, &result.Data, ctx)
-// }
+func (a *authController) Register(ctx *gin.Context) {
+	au := services.GetAuthService()
+	user, ok := au.Register(ctx)
+	if !ok.Ok {
+		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
+	}
+
+	ts := services.GetTokenService()
+
+	tokenDetail, ok := ts.GenerateTokenDetail(user, ctx)
+	if !ok.Ok {
+		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
+	}
+
+	tokens := map[string]string{}
+	tokens["accessToken"] = tokenDetail.AccessToken
+	tokens["refreshToken"] = tokenDetail.RefreshToken
+	helpers.SendResult(true, 200, "you are now authorized.", tokens, ctx)
+
+}

@@ -22,7 +22,7 @@ func NewResultResponse(ok bool, status int, message string, data interface{}) *R
 	}
 }
 
-func SendResult(ok bool, status int, msg string, data *interface{}, ctx *gin.Context) {
+func SendResult(ok bool, status int, msg string, data interface{}, ctx *gin.Context) {
 	var res ResultResponse
 	res.Data = data
 	res.Message = msg
