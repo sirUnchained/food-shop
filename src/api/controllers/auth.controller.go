@@ -87,6 +87,7 @@ func (a *authController) GetMe(ctx *gin.Context) {
 	result["username"] = user.(models.UserModel).UserName
 	result["email"] = user.(models.UserModel).Email
 	result["phone"] = user.(models.UserModel).Phone
+	result["createdAt"] = user.(models.UserModel).CreatedAt
 
 	helpers.SendResult(true, 200, "", result, ctx)
 }
