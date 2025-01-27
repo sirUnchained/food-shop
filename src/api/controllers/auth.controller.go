@@ -14,10 +14,20 @@ func GetAuthController() *authController {
 }
 
 func (a *authController) Login(ctx *gin.Context) {
-	ts := &services.TokenService{}
-	au := &services.AuthService{}
+	au := services.GetAuthService()
 
-	au.Login(ctx)
+	user, err := au.Login(ctx)
+	if err != nil {
+		helpers.SendResult(false, 500, err.Error(), nil, ctx)
+		return
+	}
+
+	ts := services.GetTokenService()
+
+	tokenDetail, err := ts.GenerateTokenDetail(user, ctx)
+	if err != nil {
+		return
+	}
 
 	// res, err := ts.GenerateTokenDetail(&token)
 	// if err != nil {
@@ -38,7 +48,10 @@ func (a *authController) Login(ctx *gin.Context) {
 	// }
 	// fmt.Printf("%+v\n", tokenClaim)
 
-	helpers.SendResult(true, 200, "done", nil, ctx)
 }
 
-func (a *authController) Register(ctx *gin.Context) {}
+func (a *authController) Register(ctx *gin.Context) {
+	au := services.GetAuthService()
+	result := au.Register(ctx)
+	helpers.SendResult(result.Ok, result.Status, result.Message, &result.Data, ctx)
+}

@@ -15,7 +15,8 @@ var dbClient *gorm.DB
 func InitPostgres(cfg *configs.Configs) error {
 	connectionStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Postgres.Host, cfg.Postgres.Username, cfg.Postgres.Password, cfg.Postgres.Dbname, cfg.Postgres.Port)
 
-	dbClient, err := gorm.Open(postgres.Open(connectionStr), &gorm.Config{})
+	var err error
+	dbClient, err = gorm.Open(postgres.Open(connectionStr), &gorm.Config{})
 	if err != nil {
 		return err
 	}

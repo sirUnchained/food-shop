@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type resultResponse struct {
+type ResultResponse struct {
 	Ok      bool        `json:"ok"`
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
@@ -14,7 +14,7 @@ type resultResponse struct {
 }
 
 func SendResult(ok bool, status int, msg string, data *interface{}, ctx *gin.Context) {
-	var res resultResponse
+	var res ResultResponse
 	res.Data = data
 	res.Message = msg
 	res.Ok = ok
@@ -24,7 +24,7 @@ func SendResult(ok bool, status int, msg string, data *interface{}, ctx *gin.Con
 }
 
 func SendValidationErrors(status int, errs string, ctx *gin.Context) {
-	var res resultResponse
+	var res ResultResponse
 	pattern := regexp.MustCompile(`Error:.*?tag`)
 
 	validationErrors := pattern.FindAllString(errs, -1)

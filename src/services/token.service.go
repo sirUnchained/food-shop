@@ -3,15 +3,22 @@ package services
 import (
 	"errors"
 	"foodshop/api/dto"
+	"foodshop/api/helpers"
 	"foodshop/configs"
+	"foodshop/data/models"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type TokenService struct{}
 
-func (ts *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDetailDTO, error) {
+func GetTokenService() *TokenService {
+	return &TokenService{}
+}
+
+func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Context) (*dto.TokenDetailDTO, error) {
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
 
@@ -20,14 +27,15 @@ func (ts *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDet
 
 	// create access token claims
 	atc := jwt.MapClaims{}
-	atc["id"] = token.Id
+	atc["id"] = user.ID
 
 	// generate access token
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
 	var err error
 	newTokenDetails.AccessToken, err = accessToken.SignedString([]byte(cfg.Jwt.AccessSecret))
 	if err != nil {
-		return nil, err
+		helpers.SendResult(false, 500, "", nil, ctx)
+		return nil, errors.New("failed to create access token")
 	}
 
 	// set refresh token expiration time
@@ -35,7 +43,7 @@ func (ts *TokenService) GenerateTokenDetail(token *dto.TokenData) (*dto.TokenDet
 
 	// create refresh token claims
 	rtc := jwt.MapClaims{}
-	rtc["id"] = token.Id
+	rtc["id"] = user.ID
 
 	// generate refresh token
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
