@@ -36,3 +36,8 @@ func (cc *categoryController) Create(ctx *gin.Context) {
 
 	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
+
+func (cc *categoryController) Update(ctx *gin.Context) {
+	cs := services.GetCategoryService()
+
+}

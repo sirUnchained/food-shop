@@ -12,4 +12,5 @@ func CategoryRoutes(r *gin.RouterGroup) {
 
 	r.GET("/category", cc.GetAll)
 	r.POST("/category", middlewares.AuthorizeUser(), cc.Create)
+	r.PATCH("/category/:id", middlewares.AuthorizeUser(), cc.Update)
 }

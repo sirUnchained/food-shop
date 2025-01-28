@@ -36,10 +36,7 @@ func (cs *categoryService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 func (cs *categoryService) Create(ctx *gin.Context) *helpers.ResultResponse {
 	db := postgres.GetDb()
 	// get and check current logged admin
-	creator, exist := ctx.Get("user")
-	if !exist {
-		return &helpers.ResultResponse{Ok: false, Status: 500, Message: "something went wrong.", Data: nil}
-	}
+	creator, _ := ctx.Get("user")
 	// get entered inputs, if there was err then return it
 	var input dto.CategoryDTO
 	if err := ctx.ShouldBindJSON(&input); err != nil {
@@ -66,4 +63,10 @@ func (cs *categoryService) Create(ctx *gin.Context) *helpers.ResultResponse {
 	}
 	// return done.
 	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "category created,", Data: newCategory}
+}
+
+func (cs *categoryService) Update(ctx *gin.Context) *helpers.ResultResponse {
+	db := postgres.GetDb()
+	// get and check current logged admin
+	updator, _ := ctx.Get("user")
 }
