@@ -48,3 +48,15 @@ func (cc *categoryController) Update(ctx *gin.Context) {
 
 	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
+
+func (cc *categoryController) Remove(ctx *gin.Context) {
+	cs := services.GetCategoryService()
+
+	result := cs.Remove(ctx)
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
+		return
+	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
+}

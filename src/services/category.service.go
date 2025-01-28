@@ -103,9 +103,29 @@ func (cs *categoryService) Update(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
 	}
 	// send result
-	return &helpers.ResultResponse{Ok: false, Status: 200, Message: "category updated.", Data: category}
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "category updated.", Data: category}
 }
 
-// func (cs *categoryService) Remove(ctx *gin.Context) *helpers.ResultResponse {
+func (cs *categoryService) Remove(ctx *gin.Context) *helpers.ResultResponse {
+	db := postgres.GetDb()
 
-// }
+	var catId int
+	var err error
+	catIdStr := ctx.Param("id")
+	if catId, err = strconv.Atoi(catIdStr); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
+	}
+	// search for category id, if you didnt find it or get error return
+	category := new(models.Category)
+	if err = db.Model(&models.Category{}).Where("ID = ?", catId).First(category).Error; category.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
+	} else if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+	// delete founded category, if we have err return
+	if err = db.Delete(category).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+	// return success response
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "category deleted.", Data: category}
+}
