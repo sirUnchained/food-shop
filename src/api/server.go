@@ -26,6 +26,7 @@ func InitServer(cfg *configs.Configs) {
 func initRoutes_v1(route *gin.RouterGroup) {
 	routers.UserRoutes(route)
 	routers.AuthRoutes(route)
+	routers.CategoryRoutes(route)
 }
 
 func InitValidators() {
