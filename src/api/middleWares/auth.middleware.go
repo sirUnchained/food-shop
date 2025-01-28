@@ -31,9 +31,9 @@ func AuthorizeUser() gin.HandlerFunc {
 			return
 		}
 
-		var user models.UserModel
+		var user models.User
 		db := postgres.GetDb()
-		db.Model(&models.UserModel{}).Where("id = ?", tokenClaims.Id).First(&user)
+		db.Model(&models.User{}).Preload("Roles").Where("id = ?", tokenClaims.Id).First(&user)
 		if user.ID == 0 {
 			fmt.Printf("%+v\n", tokenClaims)
 			helpers.SendResult(false, 404, "user not foound.", nil, ctx)

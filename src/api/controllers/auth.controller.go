@@ -82,12 +82,15 @@ func (a *authController) GetMe(ctx *gin.Context) {
 		return
 	}
 
+	fmt.Printf("%+v\n", user)
+
 	result := map[string]interface{}{}
-	result["id"] = user.(models.UserModel).ID
-	result["username"] = user.(models.UserModel).UserName
-	result["email"] = user.(models.UserModel).Email
-	result["phone"] = user.(models.UserModel).Phone
-	result["createdAt"] = user.(models.UserModel).CreatedAt
+	result["id"] = user.(models.User).ID
+	result["username"] = user.(models.User).UserName
+	result["email"] = user.(models.User).Email
+	result["phone"] = user.(models.User).Phone
+	result["createdAt"] = user.(models.User).CreatedAt
+	result["roles"] = user.(models.User).Roles
 
 	helpers.SendResult(true, 200, "", result, ctx)
 }

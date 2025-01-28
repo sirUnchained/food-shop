@@ -29,10 +29,13 @@ func InitPostgres(cfg *configs.Configs) error {
 	}
 
 	// auto migrate
-	err = dbClient.AutoMigrate(&models.UserModel{})
+	err = dbClient.AutoMigrate(&models.User{}, &models.UserRoles{})
 	if err != nil {
 		return err
 	}
+
+	// run seeder
+	// seeder.MigrateRoles(dbClient)
 
 	return nil
 }

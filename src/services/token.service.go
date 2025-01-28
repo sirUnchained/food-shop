@@ -18,7 +18,7 @@ func GetTokenService() *TokenService {
 	return &TokenService{}
 }
 
-func (ts *TokenService) GenerateTokenDetail(user *models.UserModel, ctx *gin.Context) (*dto.TokenDetailDTO, *helpers.ResultResponse) {
+func (ts *TokenService) GenerateTokenDetail(user *models.User, ctx *gin.Context) (*dto.TokenDetailDTO, *helpers.ResultResponse) {
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
 
