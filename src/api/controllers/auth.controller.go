@@ -59,6 +59,7 @@ func (a *authController) Register(ctx *gin.Context) {
 	user, ok := au.Register(ctx)
 	if !ok.Ok {
 		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
+		return
 	}
 
 	ts := services.GetTokenService()
@@ -66,6 +67,7 @@ func (a *authController) Register(ctx *gin.Context) {
 	tokenDetail, ok := ts.GenerateTokenDetail(user, ctx)
 	if !ok.Ok {
 		helpers.SendResult(false, ok.Status, ok.Message, nil, ctx)
+		return
 	}
 
 	tokens := map[string]string{}

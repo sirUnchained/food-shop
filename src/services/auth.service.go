@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/data/models"
@@ -70,10 +71,11 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 	// 	newUser.Roles = roles
 	// }
 
-	db.Model(&models.Users{}).Create(&newUser)
+	db.Create(&newUser)
 	if newUser.ID == 0 {
 		return nil, helpers.NewResultResponse(false, 500, "unknow error to register user", nil)
 	}
+	fmt.Printf("%+v\n", newUser)
 
 	return newUser, helpers.NewResultResponse(true, 201, "registration successful", newUser)
 }
