@@ -84,14 +84,18 @@ func (cs *categoryService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	slug := strings.Replace(input.Title, " ", "-", -1)
 	// check given slug exists
 	var checkCategory models.Category
-	if err := db.Model(&models.Category{}).Where("slug = ?", slug).First(&checkCategory).Error; err == nil {
+	if err := db.Model(&models.Category{}).Where("slug = ?", slug).First(&checkCategory).Error; err != nil {
 		if checkCategory.ID != 0 {
 			return &helpers.ResultResponse{Ok: false, Status: 400, Message: "category title is duplicated.", Data: nil}
 		}
 	}
-	// find and update category
+	// find and check category user want update exist or not
 	var category models.Category
 	db.Model(&models.Category{}).Where("ID = ?", catID).First(&category)
+	if category.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
+	}
+	// update category
 	category.Slug = slug
 	category.Title = input.Title
 	err = db.Save(&category).Error
@@ -101,3 +105,7 @@ func (cs *categoryService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	// send result
 	return &helpers.ResultResponse{Ok: false, Status: 200, Message: "category updated.", Data: category}
 }
+
+// func (cs *categoryService) Remove(ctx *gin.Context) *helpers.ResultResponse {
+
+// }
