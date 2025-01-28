@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type categoryService struct{}
@@ -22,7 +23,9 @@ func (cs *categoryService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 
 	db := postgres.GetDb()
 
-	err := db.Model(&models.Category{}).Find(&categories).Error
+	err := db.Model(&models.Category{}).Preload("Creator", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id", "user_name", "email")
+	}).Find(&categories).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
