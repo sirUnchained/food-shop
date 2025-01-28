@@ -1,12 +1,22 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
-type User struct {
+type Role string
+
+const (
+	Admin Role = "admin"
+	User  Role = "user"
+	Chef  Role = "chef"
+)
+
+type Users struct {
 	gorm.Model
-	UserName string      `gorm:"not null;unique"`
-	Password string      `gorm:"not null"`
-	Email    string      `gorm:"not null;unique"`
-	Phone    string      `gorm:"not null;unique"`
-	Roles    []UserRoles `gorm:"many2many:user_roles"`
+	UserName string   `gorm:"not null;unique"`
+	Password string   `gorm:"not null"`
+	Email    string   `gorm:"not null;unique"`
+	Phone    string   `gorm:"not null;unique"`
+	Roles    []string `gorm:"type:text[]"`
 }
