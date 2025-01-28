@@ -60,17 +60,17 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 
 	newUser := &models.Users{UserName: userData.Username, Password: string(hashByte), Email: userData.Email, Phone: userData.Phone}
 
-	var docCount int64
-	roles := []string{}
-	db.Model(&models.Users{}).Count(&docCount)
-	if docCount == 0 {
-		roles = append(roles, models.Admin)
-	} else {
-		roles = append(roles, models.User)
-		newUser.Roles = roles
-	}
+	// var docCount int64
+	// roles := []string{}
+	// db.Model(&models.Users{}).Count(&docCount)
+	// if docCount == 0 {
+	// 	roles = append(roles, string(models.Admin))
+	// } else {
+	// 	roles = append(roles, string(models.User))
+	// 	newUser.Roles = roles
+	// }
 
-	db.Create(&newUser)
+	db.Model(&models.Users{}).Create(&newUser)
 	if newUser.ID == 0 {
 		return nil, helpers.NewResultResponse(false, 500, "unknow error to register user", nil)
 	}
