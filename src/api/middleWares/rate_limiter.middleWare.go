@@ -14,9 +14,9 @@ func Limiter() gin.HandlerFunc {
 		err := tollbooth.LimitByRequest(lmt, ctx.Writer, ctx.Request)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"message": "too many request !"})
+			return
 		} else {
 			ctx.Next()
 		}
-		return
 	}
 }
