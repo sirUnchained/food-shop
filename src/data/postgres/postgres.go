@@ -29,7 +29,7 @@ func InitPostgres(cfg *configs.Configs) error {
 	}
 
 	// auto migrate
-	err = dbClient.AutoMigrate(&models.Users{}, &models.Category{})
+	err = dbClient.AutoMigrate(&models.Users{}, &models.Category{}, &models.Roles{})
 	if err != nil {
 		return err
 	}

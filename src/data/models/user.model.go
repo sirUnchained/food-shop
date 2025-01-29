@@ -18,5 +18,4 @@ type Users struct {
 	Password string `gorm:"not null"`
 	Email    string `gorm:"not null;unique"`
 	Phone    string `gorm:"not null;unique"`
-	// Roles    []string `gorm:"default:user"`
 }

@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/data/models"
@@ -60,22 +59,19 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 	}
 
 	newUser := &models.Users{UserName: userData.Username, Password: string(hashByte), Email: userData.Email, Phone: userData.Phone}
-
-	// var docCount int64
-	// roles := []string{}
-	// db.Model(&models.Users{}).Count(&docCount)
-	// if docCount == 0 {
-	// 	roles = append(roles, string(models.Admin))
-	// } else {
-	// 	roles = append(roles, string(models.User))
-	// 	newUser.Roles = roles
-	// }
-
 	db.Create(&newUser)
 	if newUser.ID == 0 {
 		return nil, helpers.NewResultResponse(false, 500, "unknow error to register user", nil)
 	}
-	fmt.Printf("%+v\n", newUser)
+
+	// check if our user table is empty, first user should be admin if not then he/she is user
+	docCount := int64(-1)
+	db.Model(&models.Users{}).Count(&docCount)
+	if docCount == 1 {
+		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: "admin"})
+	} else {
+		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: "user"})
+	}
 
 	return newUser, helpers.NewResultResponse(true, 201, "registration successful", newUser)
 }
