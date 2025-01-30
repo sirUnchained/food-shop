@@ -54,7 +54,7 @@ func (us *UserService) Delete(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 	}
 
-	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "user removec.", Data: nil}
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "user removed.", Data: nil}
 }
 
 func (us *UserService) UpdateUser(ctx *gin.Context) *helpers.ResultResponse {
@@ -88,16 +88,16 @@ func (us *UserService) UpdateUser(ctx *gin.Context) *helpers.ResultResponse {
 
 }
 
-func (us *UserService) CreateResturaunt(ctx *gin.Context) *helpers.ResultResponse {
-	idStr := ctx.Param("id")
+func (us *UserService) Createrestaurant(ctx *gin.Context) *helpers.ResultResponse {
+	idStr := ctx.Param("userID")
 	var err error
 	var id int
 	if id, err = strconv.Atoi(idStr); err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
 	}
 
-	resturauntData := new(dto.RestaurantDTO)
-	err = ctx.ShouldBindBodyWithJSON(resturauntData)
+	restaurantData := new(dto.RestaurantDTO)
+	err = ctx.ShouldBindBodyWithJSON(restaurantData)
 	if err != nil {
 		if err.Error() != "EOF" {
 			return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
@@ -114,19 +114,19 @@ func (us *UserService) CreateResturaunt(ctx *gin.Context) *helpers.ResultRespons
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
 	}
 
-	resturaunt := new(models.Restaurants)
-	db.Model(&models.Restaurants{}).Where("owner = ?", user.ID).First(resturaunt)
-	if resturaunt.ID != 0 {
-		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "user has already a resturaunt.", Data: nil}
+	restaurant := new(models.Restaurants)
+	db.Model(&models.Restaurants{}).Where("owner = ?", user.ID).First(restaurant)
+	if restaurant.ID != 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "user has already a restaurant.", Data: nil}
 	}
 
-	resturaunt.Address = resturauntData.Address
-	resturaunt.Description = resturauntData.Description
-	resturaunt.PostalCode = resturauntData.PostalCode
-	resturaunt.IsVerify = false
-	resturaunt.Owner = user.ID
+	restaurant.Address = restaurantData.Address
+	restaurant.Description = restaurantData.Description
+	restaurant.PostalCode = restaurantData.PostalCode
+	restaurant.IsVerify = false
+	restaurant.Owner = user.ID
 
-	err = db.Model(&models.Restaurants{}).Create(resturaunt).Error
+	err = db.Model(&models.Restaurants{}).Create(restaurant).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 	}

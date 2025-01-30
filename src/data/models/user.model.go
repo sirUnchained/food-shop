@@ -1,15 +1,10 @@
 package models
 
 import (
+
+	// "foodshop/data/postgres"
+
 	"gorm.io/gorm"
-)
-
-type Role string
-
-const (
-	Admin Role = "admin"
-	User  Role = "user"
-	Chef  Role = "chef"
 )
 
 type Users struct {
@@ -19,3 +14,15 @@ type Users struct {
 	Email    string `gorm:"not null;unique"`
 	Phone    string `gorm:"not null;unique"`
 }
+
+// func (u *Users) BeforeDelete(tx *gorm.DB) (err error) {
+// 	db := postgres.GetDb()
+
+// 	userRole := new(Roles)
+// 	db.Model(&Roles{}).Where("user_id = ?", u.ID).First(userRole)
+
+// 	if userRole.State == "admin" {
+// 		return errors.New("admin user not allowed to delete")
+// 	}
+// 	return
+// }

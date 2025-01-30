@@ -25,14 +25,14 @@ func (a *AuthService) Login(ctx *gin.Context) (*models.Users, *helpers.ResultRes
 		}
 		return nil, helpers.NewResultResponse(false, 400, "validation failed, please full the fields correctly.", nil)
 	}
-
+	// find user by username
 	db := postgres.GetDb()
 	var user models.Users
 	db.Model(&models.Users{}).Where("user_name = ?", userData.Username).First(&user)
 	if user.ID == 0 {
 		return nil, helpers.NewResultResponse(false, 404, "user name or password not found!", nil)
 	}
-
+	// Compare passwords
 	compareErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userData.Password))
 	if compareErr != nil {
 		return nil, helpers.NewResultResponse(false, 404, "invalid data", nil)
