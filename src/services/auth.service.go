@@ -42,40 +42,49 @@ func (a *AuthService) Login(ctx *gin.Context) (*models.Users, *helpers.ResultRes
 }
 
 func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.ResultResponse) {
+	// Bind the JSON payload to the userData struct
 	var userData dto.RegisterDto
 	err := ctx.ShouldBindJSON(&userData)
 	if err != nil {
 		if err.Error() != "EOF" {
+			// Return error response if JSON binding fails
 			return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
 		}
+		// Return validation error response if fields are not filled correctly
 		return nil, helpers.NewResultResponse(false, 400, "validation failed, please full the fields correctly.", nil)
 	}
 
+	// Get the database connection
 	db := postgres.GetDb()
 	var checkUser models.Users
 
+	// Check if a user with the same username, email, or phone already exists
 	db.Model(&models.Users{}).Where("user_name = ?", userData.Username).Where("email = ?", userData.Email).Where("phone = ?", userData.Phone).First(&checkUser)
 	if checkUser.ID != 0 {
 		return nil, helpers.NewResultResponse(false, 400, "these datas are not ok, please chose another.", nil)
 	}
 
+	// Hash the user's password
 	hashByte, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 15)
 	if err != nil {
 		return nil, helpers.NewResultResponse(false, 500, "with unknow reason hashing failed", nil)
 	}
 
+	// Create a new user with the provided data
 	newUser := &models.Users{UserName: userData.Username, Password: string(hashByte), Email: userData.Email, Phone: userData.Phone}
 	db.Create(&newUser)
 	if newUser.ID == 0 {
 		return nil, helpers.NewResultResponse(false, 500, "unknow error to register user", nil)
 	}
 
-	// check if our user table is empty, first user should be admin if not then he/she is user
+	// Check if the user table is empty; the first user should be an admin
 	docCount := int64(-1)
 	db.Model(&models.Users{}).Count(&docCount)
 	if docCount == 1 {
+		// Assign admin role to the first user
 		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: "admin"})
 	} else {
+		// Assign user role to subsequent users
 		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: "user"})
 	}
 

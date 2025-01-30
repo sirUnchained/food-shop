@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct{}
@@ -56,7 +57,38 @@ func (us *UserService) Delete(ctx *gin.Context) *helpers.ResultResponse {
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "user removec.", Data: nil}
 }
 
-func (us *UserService) BecomeChef(ctx *gin.Context) *helpers.ResultResponse {
+func (us *UserService) UpdateUser(ctx *gin.Context) *helpers.ResultResponse {
+	newDatas := new(dto.UpdateUserDTO)
+	err := ctx.ShouldBindBodyWithJSON(newDatas)
+	if err != nil {
+		if err.Error() != "EOF" {
+			return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "data is not valid.", Data: nil}
+	}
+
+	db := postgres.GetDb()
+	user, _ := ctx.Get("user")
+	updatedUser := new(models.Users)
+
+	db.Model(&models.Users{}).Where("ID = ?", user.(models.Users).ID).First(updatedUser)
+	if updatedUser.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: "normally user should be founded, seems like somthing went wrong.", Data: nil}
+	}
+
+	hashed, _ := bcrypt.GenerateFromPassword([]byte(newDatas.Password), 15)
+	updatedUser.Email = newDatas.Email
+	updatedUser.Phone = string(hashed)
+	updatedUser.Phone = newDatas.Phone
+	updatedUser.UserName = newDatas.UserName
+
+	db.Save(updatedUser)
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "updated.", Data: updatedUser}
+
+}
+
+func (us *UserService) CreateResturaunt(ctx *gin.Context) *helpers.ResultResponse {
 	idStr := ctx.Param("id")
 	var err error
 	var id int
@@ -64,15 +96,14 @@ func (us *UserService) BecomeChef(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
 	}
 
-	resturauntData := new(dto.Restaurant)
+	resturauntData := new(dto.RestaurantDTO)
 	err = ctx.ShouldBindBodyWithJSON(resturauntData)
 	if err != nil {
-		if err.Error() == "EOF" {
+		if err.Error() != "EOF" {
 			return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 		}
 
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
-
 	}
 
 	db := postgres.GetDb()

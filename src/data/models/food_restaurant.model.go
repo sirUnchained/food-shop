@@ -2,8 +2,8 @@ package models
 
 type FoodRestaurant struct {
 	ID           uint `gorm:"primaryKey"`
-	Restaurant   Restaurants
-	Food         Foods
-	RestaurantID uint `gorm:"foreignKey:Restaurant"`
-	FoodID       uint `gorm:"foreignKey:Food"`
+	RestaurantID uint
+	FoodID       uint
+	Restaurant   Restaurants `gorm:"foreignKey:RestaurantID"`
+	Food         Foods       `gorm:"foreignKey:FoodID"`
 }
