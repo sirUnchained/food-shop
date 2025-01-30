@@ -42,7 +42,7 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 	var userData dto.RegisterDto
 	err := ctx.ShouldBindJSON(&userData)
 	if err != nil {
-		return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
+		return nil, helpers.NewResultResponse(false, 400, "validation failed, please full the fields correctly.", nil)
 	}
 
 	db := postgres.GetDb()
