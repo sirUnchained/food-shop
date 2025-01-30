@@ -8,4 +8,6 @@ type Restaurants struct {
 	Address     string
 	PostalCode  string
 	IsVerify    bool
+	User        Users
+	Owner       uint `gorm:"foreignKey:User;unique"`
 }
