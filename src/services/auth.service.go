@@ -20,7 +20,10 @@ func (a *AuthService) Login(ctx *gin.Context) (*models.Users, *helpers.ResultRes
 	var userData dto.LoginDto
 	err := ctx.ShouldBindJSON(&userData)
 	if err != nil {
-		return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
+		if err.Error() != "EOF" {
+			return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
+		}
+		return nil, helpers.NewResultResponse(false, 400, "validation failed, please full the fields correctly.", nil)
 	}
 
 	db := postgres.GetDb()
@@ -42,6 +45,9 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 	var userData dto.RegisterDto
 	err := ctx.ShouldBindJSON(&userData)
 	if err != nil {
+		if err.Error() != "EOF" {
+			return nil, helpers.NewResultResponse(false, 400, err.Error(), nil)
+		}
 		return nil, helpers.NewResultResponse(false, 400, "validation failed, please full the fields correctly.", nil)
 	}
 

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"fmt"
 	"foodshop/api/helpers"
+	"foodshop/services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,14 +20,13 @@ type RegisterData struct {
 }
 
 func (u *userController) GetAll(ctx *gin.Context) {
-	var newUser RegisterData
+	us := services.GetUserService()
 
-	err := ctx.ShouldBindJSON(&newUser)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		helpers.SendValidationErrors(400, err.Error(), ctx)
+	result := us.GetAll()
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
 	}
 
-	helpers.SendResult(true, 200, "success", nil, ctx)
+	helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 }
