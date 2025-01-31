@@ -85,10 +85,69 @@ func (us *RestaurantService) VerifyRestaurant(ctx *gin.Context) *helpers.ResultR
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "restaurant is verifyed.", Data: nil}
 }
 
-func (rc *RestaurantService) Update(ctx *gin.Context) {
+func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
+	user, _ := ctx.Get("user")
+
+	idStr := ctx.Param("id")
+	var id int
+	var err error
+	if id, err = strconv.Atoi(idStr); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
+
+	var restaurantDTO dto.RestaurantDTO
+	err = ctx.ShouldBindBodyWithJSON(&restaurantDTO)
+	if err != nil {
+		if err.Error() != "EOF" {
+			return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
+		}
+
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "invalid datas.", Data: nil}
+	}
+
+	db := postgres.GetDb()
+	restaurant := new(models.Restaurants)
+	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	} else if restaurant.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	} else if user.(models.Users).ID != restaurant.Owner {
+		return &helpers.ResultResponse{Ok: false, Status: 403, Message: "you cannot change this restaurant.", Data: nil}
+	}
+
+	restaurant.Address = restaurantDTO.Address
+	restaurant.Description = restaurantDTO.Description
+	restaurant.PostalCode = restaurant.PostalCode
+
+	db.Save(restaurant)
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "updated restaurant.", Data: nil}
 
 }
 
-func (rc *RestaurantService) Remove(ctx *gin.Context) {
+func (rc *RestaurantService) Remove(ctx *gin.Context) *helpers.ResultResponse {
+	idStr := ctx.Param("id")
+	var err error
+	var id int
+	if id, err = strconv.Atoi(idStr); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
 
+	db := postgres.GetDb()
+	restaurant := new(models.Restaurants)
+	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
+	if restaurant.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
+
+	err = db.Delete(restaurant).Error
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "restaurant removed.", Data: nil}
 }
