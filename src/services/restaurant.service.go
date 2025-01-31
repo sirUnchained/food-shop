@@ -16,6 +16,40 @@ func GetRestaurantService() *RestaurantService {
 	return &RestaurantService{}
 }
 
+func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
+	var err error
+
+	limit_str := ctx.Query("limit")
+	var limit int
+	if limit, err = strconv.Atoi(limit_str); err != nil {
+		limit = 10
+	}
+
+	page_str := ctx.Query("page")
+	var page int
+	if limit, err = strconv.Atoi(page_str); err != nil {
+		page = 1
+	}
+
+	db := postgres.GetDb()
+	var restaurants []models.Restaurants
+	err = db.Model(&models.Restaurants{}).Offset((page - 1) * limit).Limit(limit).Find(&restaurants).Error
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	var elemCount int64
+	db.Model(&models.Restaurants{}).Count(&elemCount)
+
+	data := map[string]interface{}{}
+	data["result"] = restaurants
+	data["count"] = elemCount
+	data["limit"] = limit
+	data["page"] = page
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "here you are.", Data: data}
+}
+
 func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultResponse {
 	idStr := ctx.Param("userID")
 	var err error
