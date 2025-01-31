@@ -1,6 +1,11 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"foodshop/api/helpers"
+	"foodshop/services"
+
+	"github.com/gin-gonic/gin"
+)
 
 type RestaurantController struct{}
 
@@ -9,10 +14,22 @@ func GetRestaurantController() *RestaurantController {
 }
 
 func (rc *RestaurantController) Create(ctx *gin.Context) {
+	rs := services.GetRestaurantService()
 
+	result := rs.CreateRestaurant(ctx)
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
+		return
+	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
 func (rc *RestaurantController) Update(ctx *gin.Context) {
+
+}
+
+func (rc *RestaurantController) Verify(ctx *gin.Context) {
 
 }
 
