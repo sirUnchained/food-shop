@@ -27,6 +27,7 @@ func initRoutes_v1(route *gin.RouterGroup) {
 	routers.UserRoutes(route)
 	routers.AuthRoutes(route)
 	routers.CategoryRoutes(route)
+	routers.RestaurantRoutes(route)
 }
 
 func InitValidators() {
