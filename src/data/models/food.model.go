@@ -9,5 +9,7 @@ type Foods struct {
 	Name         string
 	Price        string
 	Description  string
+	Pic          string
+	IsAvailable  bool
 	RestaurantID uint `gorm:"index"`
 }
