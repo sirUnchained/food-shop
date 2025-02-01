@@ -13,6 +13,7 @@ type Users struct {
 	Password string `gorm:"not null"`
 	Email    string `gorm:"not null;unique"`
 	Phone    string `gorm:"not null;unique"`
+	Roles    []Roles
 }
 
 // func (u *Users) BeforeDelete(tx *gorm.DB) (err error) {
