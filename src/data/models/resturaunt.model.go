@@ -8,7 +8,8 @@ type Restaurants struct {
 	Address     string
 	PostalCode  string
 	IsVerify    bool
-	CategoryID  uint
+	CategoryID  uint    `gorm:"index"`
+	Foods       []Foods `gorm:"foreignKey:RestaurantID"`
 	Owner       uint
 	User        Users `gorm:"foreignKey:Owner"`
 }

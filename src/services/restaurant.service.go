@@ -3,6 +3,7 @@ package services
 import (
 	"foodshop/api/dto"
 	"foodshop/api/helpers"
+	"foodshop/constants"
 	"foodshop/data/models"
 	"foodshop/data/postgres"
 	"strconv"
@@ -115,6 +116,12 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 
 	// Save the new restaurant to the database
 	err = db.Model(&models.Restaurants{}).Create(restaurant).Error
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
+	}
+
+	// add user roles the chef
+	err = db.Model(&models.Roles{}).Create(&models.Roles{State: string(constants.CHEF), UserID: user.ID}).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 	}
@@ -232,6 +239,13 @@ func (rc *RestaurantService) Remove(ctx *gin.Context) *helpers.ResultResponse {
 	err = db.Delete(restaurant).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	// remove user roles the chef
+	role := models.Roles{State: string(constants.CHEF), UserID: restaurant.Owner}
+	err = db.Model(&models.Roles{}).Delete(&role).Error
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 	}
 
 	// Return success response

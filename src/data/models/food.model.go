@@ -6,8 +6,8 @@ import (
 
 type Foods struct {
 	gorm.Model
-	Name       string
-	Price      string
-	CategoryID uint
-	Category   Category `gorm:"foreignKey:CategoryID"`
+	Name         string
+	Price        string
+	Description  string
+	RestaurantID uint `gorm:"index"`
 }
