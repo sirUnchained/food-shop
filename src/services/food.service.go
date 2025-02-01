@@ -57,33 +57,40 @@ func (fc *foodService) GetFoods(ctx *gin.Context) *helpers.ResultResponse {
 }
 
 func (fc *foodService) CreateFood(ctx *gin.Context) *helpers.ResultResponse {
+	// Get the user from the context
 	user, _ := ctx.Get("user")
-	// get db
+
+	// Get the database connection
 	db := postgres.GetDb()
+
+	// Check if the restaurant exists for the user
 	checkRestaurant := new(models.Restaurants)
-	// check Restaurant exists
 	err := db.Model(&models.Restaurants{}).Where("Owner = ?", user.(models.Users).ID).First(checkRestaurant).Error
 	if checkRestaurant.ID == 0 {
 		if err != nil {
 			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 		}
-
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
 	}
 
+	// Get the uploaded picture file
 	pic, err := ctx.FormFile("pic")
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
 	}
-	dst := filepath.Join("public/foods", pic.Filename)
+
+	// Save the uploaded picture file to the destination path
+	dst := filepath.Join("/public/foods", pic.Filename)
 	if err := ctx.SaveUploadedFile(pic, dst); err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
+	// Get the food details from the form
 	name := ctx.PostForm("name")
 	price := ctx.PostForm("price")
 	description := ctx.PostForm("description")
 
+	// Create a new food model
 	food := models.Foods{
 		Name:         name,
 		Price:        price,
@@ -93,12 +100,13 @@ func (fc *foodService) CreateFood(ctx *gin.Context) *helpers.ResultResponse {
 		RestaurantID: checkRestaurant.ID,
 	}
 
+	// Save the new food to the database
 	if err := db.Create(&food).Error; err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
+	// Return a successful response
 	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "food created successfully.", Data: food}
-
 }
 
 // func (fc *foodService) UpdateFood(ctx *gin.Context) *helpers.ResultResponse {

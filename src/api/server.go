@@ -15,6 +15,10 @@ func InitServer(cfg *configs.Configs) {
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery(), middlewares.Limiter())
 
+	// server.StaticFS("/public", gin.Dir("/public", false))
+	// server.StaticFS("/public/foods", gin.Dir("/public/foods", false))
+	server.Static("/public", "./public")
+
 	InitValidators()
 
 	v1 := server.Group("/api/v1")
