@@ -60,13 +60,8 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 }
 
 func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultResponse {
-	// Get the user ID from the URL parameter
-	idStr := ctx.Param("userID")
+	user, _ := ctx.Get("user")
 	var err error
-	var id int
-	if id, err = strconv.Atoi(idStr); err != nil {
-		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
-	}
 
 	// Bind the request body to restaurantData
 	restaurantData := new(dto.RestaurantDTO)
@@ -81,7 +76,7 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 
 	// Get the database connection
 	db := postgres.GetDb()
-	user := new(models.Users)
+	// user := new(models.Users)
 
 	// check do category exist
 	checkCategory := new(models.Category)
@@ -93,15 +88,9 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
 	}
 
-	// Find the user by ID
-	db.Model(&models.Users{}).Where("ID = ?", id).First(user)
-	if user.ID == 0 {
-		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "user not found.", Data: nil}
-	}
-
 	// Check if the user already has a restaurant
 	restaurant := new(models.Restaurants)
-	db.Model(&models.Restaurants{}).Where("owner = ?", user.ID).First(restaurant)
+	db.Model(&models.Restaurants{}).Where("owner = ?", user.(models.Users).ID).First(restaurant)
 	if restaurant.ID != 0 {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "user has already a restaurant.", Data: nil}
 	}
@@ -111,7 +100,7 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 	restaurant.Description = restaurantData.Description
 	restaurant.PostalCode = restaurantData.PostalCode
 	restaurant.IsVerify = false
-	restaurant.Owner = user.ID
+	restaurant.Owner = user.(models.Users).ID
 	restaurant.CategoryID = checkCategory.ID
 
 	// Save the new restaurant to the database
@@ -121,7 +110,7 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 	}
 
 	// add user roles the chef
-	err = db.Model(&models.Roles{}).Create(&models.Roles{State: string(constants.CHEF), UserID: user.ID}).Error
+	err = db.Model(&models.Roles{}).Create(&models.Roles{State: string(constants.CHEF), UserID: user.(models.Users).ID}).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
 	}

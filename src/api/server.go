@@ -14,9 +14,7 @@ import (
 func InitServer(cfg *configs.Configs) {
 	server := gin.New()
 	server.Use(gin.Logger(), gin.Recovery(), middlewares.Limiter())
-
-	// server.StaticFS("/public", gin.Dir("/public", false))
-	// server.StaticFS("/public/foods", gin.Dir("/public/foods", false))
+	// set static path folder
 	server.Static("/public", "./public")
 
 	InitValidators()

@@ -113,6 +113,6 @@ func (fc *foodService) CreateFood(ctx *gin.Context) *helpers.ResultResponse {
 
 // }
 
-// func (fc *foodService) RemoveFood(ctx *gin.Context) *helpers.ResultResponse {
+func (fc *foodService) RemoveFood(ctx *gin.Context) *helpers.ResultResponse {
 
-// }
+}
