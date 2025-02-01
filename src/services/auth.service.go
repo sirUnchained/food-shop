@@ -83,10 +83,10 @@ func (a *AuthService) Register(ctx *gin.Context) (*models.Users, *helpers.Result
 	db.Model(&models.Users{}).Count(&docCount)
 	if docCount == 1 {
 		// Assign admin role to the first user
-		db.Model(&models.Roles{}).Create(&models.Roles{UsersID: newUser.ID, State: string(constants.ADMIN)})
+		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: string(constants.ADMIN)})
 	} else {
 		// Assign user role to subsequent users
-		db.Model(&models.Roles{}).Create(&models.Roles{UsersID: newUser.ID, State: string(constants.USER)})
+		db.Model(&models.Roles{}).Create(&models.Roles{UserID: newUser.ID, State: string(constants.USER)})
 	}
 
 	return newUser, helpers.NewResultResponse(true, 201, "registration successful", newUser)

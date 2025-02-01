@@ -9,11 +9,11 @@ import (
 
 type Users struct {
 	gorm.Model
-	UserName string `gorm:"not null;unique"`
-	Password string `gorm:"not null"`
-	Email    string `gorm:"not null;unique"`
-	Phone    string `gorm:"not null;unique"`
-	Roles    []Roles
+	UserName string  `gorm:"not null;unique"`
+	Password string  `gorm:"not null"`
+	Email    string  `gorm:"not null;unique"`
+	Phone    string  `gorm:"not null;unique"`
+	Roles    []Roles `gorm:"foreignKey:UserID"`
 }
 
 // func (u *Users) BeforeDelete(tx *gorm.DB) (err error) {

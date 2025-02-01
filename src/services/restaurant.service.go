@@ -38,7 +38,7 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 	var restaurants []models.Restaurants
 
 	// Retrieve the restaurants with pagination
-	err = db.Model(&models.Restaurants{}).Offset((page - 1) * limit).Limit(limit).Find(&restaurants).Error
+	err = db.Model(&models.Restaurants{}).Where("is_verify = ?", true).Offset((page - 1) * limit).Limit(limit).Find(&restaurants).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
@@ -82,6 +82,16 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 	db := postgres.GetDb()
 	user := new(models.Users)
 
+	// check do category exist
+	checkCategory := new(models.Category)
+	err = db.Model(&models.Category{}).Where("ID = ?", restaurantData.CategoryID).First(checkCategory).Error
+	if checkCategory.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
+	}
+
 	// Find the user by ID
 	db.Model(&models.Users{}).Where("ID = ?", id).First(user)
 	if user.ID == 0 {
@@ -101,6 +111,7 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 	restaurant.PostalCode = restaurantData.PostalCode
 	restaurant.IsVerify = false
 	restaurant.Owner = user.ID
+	restaurant.CategoryID = checkCategory.ID
 
 	// Save the new restaurant to the database
 	err = db.Model(&models.Restaurants{}).Create(restaurant).Error
@@ -163,6 +174,16 @@ func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	db := postgres.GetDb()
 	restaurant := new(models.Restaurants)
 
+	// check do category exist
+	checkCategory := new(models.Category)
+	err = db.Model(&models.Category{}).Where("ID = ?", restaurantDTO.CategoryID).First(checkCategory).Error
+	if checkCategory.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 404, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
+	}
+
 	// Find the restaurant by ID
 	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
 	if err != nil {
@@ -177,6 +198,7 @@ func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	restaurant.Address = restaurantDTO.Address
 	restaurant.Description = restaurantDTO.Description
 	restaurant.PostalCode = restaurantDTO.PostalCode
+	restaurant.CategoryID = checkCategory.ID
 
 	// Save the updated restaurant to the database
 	db.Save(restaurant)
