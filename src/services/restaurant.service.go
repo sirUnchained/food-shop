@@ -46,7 +46,7 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 
 	// Count the total number of restaurants
 	var elemCount int64
-	db.Model(&models.Restaurants{}).Count(&elemCount)
+	db.Model(&models.Restaurants{}).Where("IsVerify = ?", true).Count(&elemCount)
 
 	// Prepare the response data
 	data := map[string]interface{}{}
@@ -141,6 +141,8 @@ func (us *RestaurantService) VerifyRestaurant(ctx *gin.Context) *helpers.ResultR
 	// verify restaurant
 	restaurant.IsVerify = true
 
+	db.Save(restaurant)
+
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "restaurant is verifyed.", Data: nil}
 }
 
@@ -225,10 +227,7 @@ func (rc *RestaurantService) Remove(ctx *gin.Context) *helpers.ResultResponse {
 	}
 
 	// Delete the restaurant
-	err = db.Delete(restaurant).Error
-	if err != nil {
-		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
-	}
+	db.Delete(restaurant)
 
 	// remove user roles the chef
 	role := models.Roles{State: string(constants.CHEF), UserID: restaurant.Owner}

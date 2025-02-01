@@ -64,7 +64,7 @@ func (rc *RestaurantController) Verify(ctx *gin.Context) {
 func (rc *RestaurantController) Remove(ctx *gin.Context) {
 	rs := services.GetRestaurantService()
 
-	result := rs.Update(ctx)
+	result := rs.Remove(ctx)
 	if !result.Ok {
 		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
