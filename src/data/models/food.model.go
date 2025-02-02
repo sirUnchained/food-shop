@@ -1,15 +1,15 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
+import "time"
 
 type Foods struct {
-	gorm.Model
+	ID           uint `gorm:"primaryKey"`
 	Name         string
 	Price        string
 	Description  string
 	Pic          string
 	IsAvailable  bool
 	RestaurantID uint `gorm:"index"`
+	UpdatedAt    time.Time
+	CreatedAt    time.Time
 }

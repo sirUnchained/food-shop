@@ -1,9 +1,9 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Restaurants struct {
-	gorm.Model
+	ID          uint `gorm:"primaryKey"`
 	Description string
 	Address     string
 	PostalCode  string
@@ -12,4 +12,6 @@ type Restaurants struct {
 	Foods       []Foods `gorm:"foreignKey:RestaurantID"`
 	Owner       uint
 	User        Users `gorm:"foreignKey:Owner"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

@@ -1,19 +1,18 @@
 package models
 
-import (
+import "time"
 
-	// "foodshop/data/postgres"
-
-	"gorm.io/gorm"
-)
+// "foodshop/data/postgres"
 
 type Users struct {
-	gorm.Model
-	UserName string  `gorm:"not null;unique"`
-	Password string  `gorm:"not null"`
-	Email    string  `gorm:"not null;unique"`
-	Phone    string  `gorm:"not null;unique"`
-	Roles    []Roles `gorm:"foreignKey:UserID"`
+	ID        uint    `gorm:"primaryKey"`
+	UserName  string  `gorm:"not null;unique"`
+	Password  string  `gorm:"not null"`
+	Email     string  `gorm:"not null;unique"`
+	Phone     string  `gorm:"not null;unique"`
+	Roles     []Roles `gorm:"foreignKey:UserID"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // func (u *Users) BeforeDelete(tx *gorm.DB) (err error) {
