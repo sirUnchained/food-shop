@@ -14,15 +14,3 @@ type Users struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
-
-// func (u *Users) BeforeDelete(tx *gorm.DB) (err error) {
-// 	db := postgres.GetDb()
-
-// 	userRole := new(Roles)
-// 	db.Model(&Roles{}).Where("user_id = ?", u.ID).First(userRole)
-
-// 	if userRole.State == "admin" {
-// 		return errors.New("admin user not allowed to delete")
-// 	}
-// 	return
-// }
