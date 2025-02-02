@@ -7,6 +7,7 @@ import (
 	"foodshop/data/models"
 	"foodshop/data/postgres"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -88,14 +89,19 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
 	}
 
+	// create slug
+	slug := strings.Replace(restaurantData.Title, " ", "-", -1)
+
 	// Check if the user already has a restaurant
 	restaurant := new(models.Restaurants)
-	db.Model(&models.Restaurants{}).Where("owner = ?", user.(models.Users).ID).First(restaurant)
+	db.Model(&models.Restaurants{}).Where("owner = ? OR slug = ?", user.(models.Users).ID, slug).First(restaurant)
 	if restaurant.ID != 0 {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "user has already a restaurant.", Data: nil}
 	}
 
 	// Create a new restaurant
+	restaurant.Slug = slug
+	restaurant.Title = restaurantData.Title
 	restaurant.Address = restaurantData.Address
 	restaurant.Description = restaurantData.Description
 	restaurant.PostalCode = restaurantData.PostalCode
@@ -182,8 +188,18 @@ func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "category not found.", Data: nil}
 	}
 
+	// create slug
+	slug := strings.Replace(restaurantDTO.Title, " ", "-", -1)
+
+	// check is there any restaurant that have this slug
+	var restaurants []models.Restaurants
+	db.Model(&models.Restaurants{}).Where("Slug = ?", slug).Find(&restaurants)
+	if len(restaurants) > 1 {
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "the chosen title is chosen by other restaurant.", Data: nil}
+	}
+
 	// Find the restaurant by ID
-	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
+	err = db.Model(&models.Restaurants{}).Where("slug = ?", slug).Where("ID = ?", id).First(restaurant).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	} else if restaurant.ID == 0 {
@@ -193,9 +209,11 @@ func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	}
 
 	// Update the restaurant fields
+	restaurant.Slug = strings.TrimSpace(slug)
+	restaurant.Title = strings.TrimSpace(restaurantDTO.Title)
 	restaurant.Address = restaurantDTO.Address
 	restaurant.Description = restaurantDTO.Description
-	restaurant.PostalCode = restaurantDTO.PostalCode
+	restaurant.PostalCode = strings.TrimSpace(restaurantDTO.PostalCode)
 	restaurant.CategoryID = checkCategory.ID
 
 	// Save the updated restaurant to the database

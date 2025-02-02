@@ -4,6 +4,8 @@ import "time"
 
 type Restaurants struct {
 	ID          uint `gorm:"primaryKey"`
+	Title       string
+	Slug        string `gorm:"unique"`
 	Description string
 	Address     string
 	PostalCode  string
