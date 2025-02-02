@@ -13,5 +13,6 @@ func FoodRoutes(r *gin.RouterGroup) {
 	r.GET("/foods", fc.GetAll)
 	r.POST("/foods", middlewares.AuthorizeUser(), middlewares.RoleGaurd("chef"), fc.Create)
 	r.PUT("/foods/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("chef"), fc.Update)
+	r.PATCH("/foods/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("chef"), fc.Update)
 	r.DELETE("/foods/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), fc.Remove)
 }
