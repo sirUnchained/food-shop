@@ -190,9 +190,9 @@ func (fc *foodService) UpdateFood(ctx *gin.Context) *helpers.ResultResponse {
 	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "food updated successfully.", Data: checkFood}
 }
 
-// func (fc *foodService) AvailableOrUnAvailableFood(ctx *gin.Context) *helpers.ResultResponse {
+func (fc *foodService) AvailableOrUnAvailableFood(ctx *gin.Context) *helpers.ResultResponse {
 
-// }
+}
 
 func (fc *foodService) RemoveFood(ctx *gin.Context) *helpers.ResultResponse {
 	id_str := ctx.Param("id")

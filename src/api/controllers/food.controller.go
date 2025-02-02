@@ -49,6 +49,18 @@ func (fc *foodController) Update(ctx *gin.Context) {
 	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
+func (fc *foodController) UpdateAvailableStatus(ctx *gin.Context) {
+	fs := services.GetFoodService()
+
+	result := fs.AvailableOrUnAvailableFood(ctx)
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
+		return
+	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
+}
+
 func (fc *foodController) Remove(ctx *gin.Context) {
 	fs := services.GetFoodService()
 
