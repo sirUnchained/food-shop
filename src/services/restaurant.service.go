@@ -90,7 +90,7 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 	}
 
 	// create slug
-	slug := strings.Replace(restaurantData.Title, " ", "-", -1)
+	slug := strings.TrimSpace(strings.Replace(restaurantData.Title, " ", "-", -1))
 
 	// Check if the user already has a restaurant
 	restaurant := new(models.Restaurants)
@@ -101,10 +101,10 @@ func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultR
 
 	// Create a new restaurant
 	restaurant.Slug = slug
-	restaurant.Title = restaurantData.Title
+	restaurant.Title = strings.TrimSpace(restaurantData.Title)
 	restaurant.Address = restaurantData.Address
 	restaurant.Description = restaurantData.Description
-	restaurant.PostalCode = restaurantData.PostalCode
+	restaurant.PostalCode = strings.TrimSpace(restaurantData.PostalCode)
 	restaurant.IsVerify = false
 	restaurant.Owner = user.(models.Users).ID
 	restaurant.CategoryID = checkCategory.ID
@@ -155,14 +155,7 @@ func (us *RestaurantService) VerifyRestaurant(ctx *gin.Context) *helpers.ResultR
 func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 	// Get the user from the context
 	user, _ := ctx.Get("user")
-
-	// Get the restaurant ID from the URL parameter
-	idStr := ctx.Param("id")
-	var id int
 	var err error
-	if id, err = strconv.Atoi(idStr); err != nil {
-		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
-	}
 
 	// Bind the request body to restaurantDTO
 	var restaurantDTO dto.RestaurantDTO
@@ -198,14 +191,12 @@ func (rc *RestaurantService) Update(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "the chosen title is chosen by other restaurant.", Data: nil}
 	}
 
-	// Find the restaurant by ID
-	err = db.Model(&models.Restaurants{}).Where("slug = ?", slug).Where("ID = ?", id).First(restaurant).Error
+	// Find the restaurant by its owner ID
+	err = db.Model(&models.Restaurants{}).Where("slug = ?", slug).Where("Owner = ?", user.(models.Users).ID).First(restaurant).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	} else if restaurant.ID == 0 {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
-	} else if user.(models.Users).ID != restaurant.Owner {
-		return &helpers.ResultResponse{Ok: false, Status: 403, Message: "you cannot change this restaurant.", Data: nil}
 	}
 
 	// Update the restaurant fields

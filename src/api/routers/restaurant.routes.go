@@ -13,7 +13,7 @@ func RestaurantRoutes(r *gin.RouterGroup) {
 
 	r.GET("/restaurant", handler.GetAll)
 	r.POST("/restaurant", middlewares.AuthorizeUser(), handler.Create)
-	r.PUT("/restaurant/:id", middlewares.AuthorizeUser(), handler.Update)
+	r.PUT("/restaurant", middlewares.AuthorizeUser(), handler.Update)
 	r.PATCH("/restaurant/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), handler.Verify)
 	r.DELETE("/restaurant/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), handler.Remove)
 }
