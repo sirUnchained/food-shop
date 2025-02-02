@@ -191,7 +191,55 @@ func (fc *foodService) UpdateFood(ctx *gin.Context) *helpers.ResultResponse {
 }
 
 func (fc *foodService) AvailableOrUnAvailableFood(ctx *gin.Context) *helpers.ResultResponse {
+	// Get the user from the context
+	user, _ := ctx.Get("user")
 
+	// Get the database connection
+	db := postgres.GetDb()
+
+	// Get the food ID from the parameters
+	id_str := ctx.Param("id")
+	var err error
+	var id int
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "food not found.", Data: nil}
+	}
+
+	// Check if the restaurant exists for the user
+	checkRestaurant := new(models.Restaurants)
+	err = db.Model(&models.Restaurants{}).Where("Owner = ?", user.(models.Users).ID).First(checkRestaurant).Error
+	if checkRestaurant.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
+
+	// Check if the food exists
+	checkFood := new(models.Foods)
+	err = db.Model(&models.Foods{}).Where("ID = ?", id).First(checkFood).Error
+	if checkFood.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "food not found.", Data: nil}
+	}
+
+	// Check if this food belongs to the restaurant
+	if checkRestaurant.ID != checkFood.RestaurantID {
+		return &helpers.ResultResponse{Ok: false, Status: 403, Message: "you cannot change other restaurants foods.", Data: nil}
+	}
+
+	// Toggle the availability status of the food
+	checkFood.IsAvailable = !checkFood.IsAvailable
+
+	// Save the updated food to the database
+	if err := db.Save(checkFood).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	// Return a successful response
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "food availability status updated successfully.", Data: checkFood}
 }
 
 func (fc *foodService) RemoveFood(ctx *gin.Context) *helpers.ResultResponse {
@@ -202,16 +250,20 @@ func (fc *foodService) RemoveFood(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "food not found.", Data: nil}
 	}
 
-	food := new(models.Restaurants)
+	food := new(models.Foods)
 	db := postgres.GetDb()
 
-	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(food).Error
+	err = db.Model(&models.Foods{}).Where("ID = ?", id).First(food).Error
 	if food.ID == 0 {
 		if err != nil {
 			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 		}
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "food not found.", Data: nil}
 	}
+
+	// remove file photo
+	s, _ := os.Getwd()
+	os.Remove(path.Join(s, food.Pic))
 
 	err = db.Model(&models.Restaurants{}).Delete(food).Error
 	if err != nil {
