@@ -124,7 +124,39 @@ func (rc *OrderService) Create(ctx *gin.Context) *helpers.ResultResponse {
 	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "Order created successfully.", Data: newOrder}
 }
 
-func (rc *OrderService) DeliveredStatus(ctx *gin.Context) {}
+func (rc *OrderService) DeliveredStatus(ctx *gin.Context) *helpers.ResultResponse {
+	var orderID int
+	var err error
+
+	orderID_str := ctx.Param("id")
+	if orderID, err = strconv.Atoi(orderID_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	user, _ := ctx.Get("user")
+	db := postgres.GetDb()
+
+	var order models.Orders
+	db.Model(&models.Orders{}).Where("ID = ?", orderID).First(&order)
+	if order.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	var restaurant models.Restaurants
+	db.Model(&models.Restaurants{}).Where("Owner = ?", user.(models.Users).ID).First(&restaurant)
+	if restaurant.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: "you should not be here ! somthing went wrong.", Data: nil}
+	}
+
+	if restaurant.ID != order.Restaurant {
+		return &helpers.ResultResponse{Ok: false, Status: 403, Message: "access denied. you cannot change other restaurant order data.", Data: nil}
+	}
+
+	order.IsDelivered = true
+	db.Save(order)
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "order delivered status changed !", Data: nil}
+}
 
 func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {}
 
