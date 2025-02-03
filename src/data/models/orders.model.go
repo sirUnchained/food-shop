@@ -11,7 +11,7 @@ type Orders struct {
 	Address     string      `gorm:"not null"`
 	PostalCode  string      `gorm:"not null"`
 	IsDelivered bool        `gorm:"default:false"`
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Stars       int         `gorm:"default:0"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
