@@ -10,7 +10,9 @@ import (
 func OrderRoutes(r *gin.RouterGroup) {
 	rc := controllers.GetOrderController()
 
-	r.GET("/orders", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.GetAll)
+	r.GET("/orders/:id", middlewares.AuthorizeUser(), rc.GetOne)
+	r.GET("/orders/admin-all", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.GetAllAdmin)
+	r.GET("/orders/user-all", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.GetAllUser)
 	r.POST("/orders", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.Create)
 	r.PATCH("/orders/deliver-status", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.DeliveredStatus)
 	r.PATCH("/orders/star", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.AddStars)

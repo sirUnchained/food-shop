@@ -1,0 +1,111 @@
+package services
+
+import (
+	"foodshop/api/helpers"
+	"foodshop/data/models"
+	"foodshop/data/postgres"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+type OrderService struct{}
+
+func GetOrderService() *OrderService {
+	return &OrderService{}
+}
+
+func (rc *OrderService) GetAllAdmin(ctx *gin.Context) *helpers.ResultResponse {
+	var err error
+
+	// Get the limit query parameter, default to 10 if not provided or invalid
+	limit_str := ctx.Query("limit")
+	var limit int
+	if limit, err = strconv.Atoi(limit_str); err != nil {
+		limit = 10
+	}
+
+	// Get the page query parameter, default to 1 if not provided or invalid
+	page_str := ctx.Query("page")
+	var page int
+	if page, err = strconv.Atoi(page_str); err != nil {
+		page = 1
+	}
+
+	// calculate the offset for pagination
+	offset := (page - 1) * limit
+
+	var orders []models.Orders
+	db := postgres.GetDb()
+	// user, _ := ctx.Get("user")
+
+	// fetch orders from the database with pagination
+	if err := db.Model(&models.Orders{}).Limit(limit).Offset(offset).Find(&orders).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "Orders fetched successfully.", Data: orders}
+}
+
+func (rc *OrderService) GetAllUser(ctx *gin.Context) *helpers.ResultResponse {
+	var err error
+	var orders []models.Orders
+	user, _ := ctx.Get("user")
+	db := postgres.GetDb()
+
+	// Get the limit query parameter, default to 10 if not provided or invalid
+	limit_str := ctx.Query("limit")
+	var limit int
+	if limit, err = strconv.Atoi(limit_str); err != nil {
+		limit = 10
+	}
+
+	// Get the page query parameter, default to 1 if not provided or invalid
+	page_str := ctx.Query("page")
+	var page int
+	if page, err = strconv.Atoi(page_str); err != nil {
+		page = 1
+	}
+
+	// calculate the offset for pagination
+	offset := (page - 1) * limit
+
+	// fetch orders from the database with pagination for the specific user
+	if err := db.Model(&models.Orders{}).Where("user_id = ?", user.(models.Users).ID).Limit(limit).Offset(offset).Find(&orders).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "User orders fetched successfully.", Data: orders}
+}
+
+func (rc *OrderService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
+	var orderID int
+	var err error
+
+	orderID_str := ctx.Param("id")
+	if orderID, err = strconv.Atoi(orderID_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	var order models.Orders
+	user, _ := ctx.Get("user")
+	db := postgres.GetDb()
+
+	db.Model(&models.Orders{}).Where("ID = ? AND User = ?", orderID, user.(models.Users).ID).First(&order)
+	if order.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "here you are.", Data: order}
+
+}
+
+func (rc *OrderService) Create(ctx *gin.Context) *helpers.ResultResponse {
+
+}
+
+func (rc *OrderService) DeliveredStatus(ctx *gin.Context) {}
+
+func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {}
+
+func (rc *OrderService) Remove(ctx *gin.Context) *helpers.ResultResponse {}
