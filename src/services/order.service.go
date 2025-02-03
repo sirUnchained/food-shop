@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/data/models"
@@ -50,7 +51,8 @@ func (rc *OrderService) GetAllAdmin(ctx *gin.Context) *helpers.ResultResponse {
 
 func (rc *OrderService) GetAllUser(ctx *gin.Context) *helpers.ResultResponse {
 	var err error
-	var orders []models.Orders
+	// var orders []models.Orders
+	orders := new([]models.Orders)
 	user, _ := ctx.Get("user")
 	db := postgres.GetDb()
 
@@ -72,8 +74,11 @@ func (rc *OrderService) GetAllUser(ctx *gin.Context) *helpers.ResultResponse {
 	offset := (page - 1) * limit
 
 	// fetch orders from the database with pagination for the specific user
-	if err := db.Model(&models.Orders{}).Where("user_id = ?", user.(models.Users).ID).Limit(limit).Offset(offset).Find(&orders).Error; err != nil {
-		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	if err := db.Model(&models.Orders{}).Where("user_id = ?", user.(models.Users).ID).Limit(limit).Offset(offset).Find(orders).Error; len(*orders) == 0 {
+		fmt.Println(len(*orders))
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+		}
 	}
 
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "User orders fetched successfully.", Data: orders}
@@ -111,8 +116,8 @@ func (rc *OrderService) Create(ctx *gin.Context) *helpers.ResultResponse {
 	user, _ := ctx.Get("user")
 
 	newOrder := new(models.Orders)
-	newOrder.User = user.(models.Users).ID
-	newOrder.Restaurant = orderDTO.Restaurant
+	newOrder.UserID = user.(models.Users).ID
+	newOrder.RestaurantID = orderDTO.Restaurant
 	newOrder.Address = orderDTO.Address
 	newOrder.PostalCode = orderDTO.PostalCode
 
@@ -148,7 +153,7 @@ func (rc *OrderService) DeliveredStatus(ctx *gin.Context) *helpers.ResultRespons
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: "you should not be here ! somthing went wrong.", Data: nil}
 	}
 
-	if restaurant.ID != order.Restaurant {
+	if restaurant.ID != order.RestaurantID {
 		return &helpers.ResultResponse{Ok: false, Status: 403, Message: "access denied. you cannot change other restaurant order data.", Data: nil}
 	}
 
@@ -168,7 +173,7 @@ func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
 	}
 
-	err = ctx.ShouldBindBodyWithJSON(starDTO)
+	err = ctx.ShouldBindBodyWithJSON(&starDTO)
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
 	}
@@ -177,8 +182,10 @@ func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {
 	db := postgres.GetDb()
 
 	var order models.Orders
-	db.Model(&models.Orders{}).Where("ID = ? AND User = ?", orderID, user.(models.Users).ID).First(&order)
+	db.Model(&models.Orders{}).Where("ID = ?", orderID).First(&order)
 	if order.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	} else if order.UserID != user.(models.Users).ID {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
 	}
 

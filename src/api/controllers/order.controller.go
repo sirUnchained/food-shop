@@ -55,6 +55,7 @@ func (rc *OrderController) Create(ctx *gin.Context) {
 
 	result := orderService.Create(ctx)
 	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
 	}
 
@@ -66,6 +67,7 @@ func (rc *OrderController) DeliveredStatus(ctx *gin.Context) {
 
 	result := orderService.DeliveredStatus(ctx)
 	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
 	}
 
@@ -77,6 +79,7 @@ func (rc *OrderController) AddStars(ctx *gin.Context) {
 
 	result := orderService.AddStars(ctx)
 	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
 	}
 
@@ -88,6 +91,7 @@ func (rc *OrderController) Remove(ctx *gin.Context) {
 
 	result := orderService.Remove(ctx)
 	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 		return
 	}
 
