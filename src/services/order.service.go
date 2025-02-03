@@ -158,6 +158,56 @@ func (rc *OrderService) DeliveredStatus(ctx *gin.Context) *helpers.ResultRespons
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "order delivered status changed !", Data: nil}
 }
 
-func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {}
+func (rc *OrderService) AddStars(ctx *gin.Context) *helpers.ResultResponse {
+	var orderID int
+	var starDTO dto.ChangeStarDTO
+	var err error
 
-func (rc *OrderService) Remove(ctx *gin.Context) *helpers.ResultResponse {}
+	orderID_str := ctx.Param("id")
+	if orderID, err = strconv.Atoi(orderID_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	err = ctx.ShouldBindBodyWithJSON(starDTO)
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
+	}
+
+	user, _ := ctx.Get("user")
+	db := postgres.GetDb()
+
+	var order models.Orders
+	db.Model(&models.Orders{}).Where("ID = ? AND User = ?", orderID, user.(models.Users).ID).First(&order)
+	if order.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	order.Stars = starDTO.Stars
+	db.Save(&order)
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "order stars updated successfully.", Data: order}
+}
+
+func (rc *OrderService) Remove(ctx *gin.Context) *helpers.ResultResponse {
+	var orderID int
+	var err error
+
+	orderID_str := ctx.Param("id")
+	if orderID, err = strconv.Atoi(orderID_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	db := postgres.GetDb()
+
+	var order models.Orders
+	db.Model(&models.Orders{}).Where("ID = ?", orderID).First(&order)
+	if order.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
+	}
+
+	if err := db.Delete(&order).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "order removed successfully.", Data: nil}
+}
