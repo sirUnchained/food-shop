@@ -14,7 +14,7 @@ func OrderRoutes(r *gin.RouterGroup) {
 	r.GET("/orders/admin-all", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.GetAllAdmin)
 	r.GET("/orders/user-all", middlewares.AuthorizeUser(), rc.GetAllUser)
 	r.POST("/orders", middlewares.AuthorizeUser(), rc.Create)
-	r.PATCH("/orders/deliver-status", middlewares.AuthorizeUser(), middlewares.RoleGaurd("chef"), middlewares.RoleGaurd("admin"), rc.DeliveredStatus)
+	r.PATCH("/orders/deliver-status/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("chef"), middlewares.RoleGaurd("admin"), rc.DeliveredStatus)
 	r.PATCH("/orders/star/:id", middlewares.AuthorizeUser(), rc.AddStars)
 	r.DELETE("/orders/:id", middlewares.AuthorizeUser(), middlewares.RoleGaurd("admin"), rc.Remove)
 }

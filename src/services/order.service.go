@@ -97,7 +97,7 @@ func (rc *OrderService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
 	user, _ := ctx.Get("user")
 	db := postgres.GetDb()
 
-	db.Model(&models.Orders{}).Where("ID = ? AND User = ?", orderID, user.(models.Users).ID).First(&order)
+	db.Model(&models.Orders{}).Where("ID = ? AND user_id = ?", orderID, user.(models.Users).ID).Preload("Restaurant").First(&order)
 	if order.ID == 0 {
 		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "order not found.", Data: nil}
 	}
