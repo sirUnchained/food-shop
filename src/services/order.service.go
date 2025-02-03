@@ -1,6 +1,7 @@
 package services
 
 import (
+	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/data/models"
 	"foodshop/data/postgres"
@@ -101,7 +102,26 @@ func (rc *OrderService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
 }
 
 func (rc *OrderService) Create(ctx *gin.Context) *helpers.ResultResponse {
+	orderDTO := new(dto.OrderDTO)
+	err := ctx.ShouldBindBodyWithJSON(&orderDTO)
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: err.Error(), Data: nil}
+	}
 
+	user, _ := ctx.Get("user")
+
+	newOrder := new(models.Orders)
+	newOrder.User = user.(models.Users).ID
+	newOrder.Restaurant = orderDTO.Restaurant
+	newOrder.Address = orderDTO.Address
+	newOrder.PostalCode = orderDTO.PostalCode
+
+	db := postgres.GetDb()
+	if err := db.Create(newOrder).Error; err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "Order created successfully.", Data: newOrder}
 }
 
 func (rc *OrderService) DeliveredStatus(ctx *gin.Context) {}

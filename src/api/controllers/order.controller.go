@@ -36,7 +36,6 @@ func (rc *OrderController) GetAllUser(ctx *gin.Context) {
 	}
 
 	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
-
 }
 
 func (rc *OrderController) GetOne(ctx *gin.Context) {
@@ -54,10 +53,12 @@ func (rc *OrderController) GetOne(ctx *gin.Context) {
 func (rc *OrderController) Create(ctx *gin.Context) {
 	orderService := services.GetOrderService()
 
-	result := orderService.GetAll()
+	result := orderService.Create(ctx)
 	if !result.Ok {
 		return
 	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
 func (rc *OrderController) DeliveredStatus(ctx *gin.Context) {
@@ -67,6 +68,8 @@ func (rc *OrderController) DeliveredStatus(ctx *gin.Context) {
 	if !result.Ok {
 		return
 	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
 func (rc *OrderController) AddStars(ctx *gin.Context) {
@@ -76,6 +79,8 @@ func (rc *OrderController) AddStars(ctx *gin.Context) {
 	if !result.Ok {
 		return
 	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
 func (rc *OrderController) Remove(ctx *gin.Context) {
@@ -85,4 +90,6 @@ func (rc *OrderController) Remove(ctx *gin.Context) {
 	if !result.Ok {
 		return
 	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
