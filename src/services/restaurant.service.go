@@ -40,14 +40,14 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 	var restaurants []models.Restaurants
 
 	// Retrieve the restaurants with pagination
-	err = db.Model(&models.Restaurants{}).Where("is_verify = ?", true).Offset((page-1)*limit).Limit(limit).Select("title", "slug").Find(&restaurants).Error
+	err = db.Model(&models.Restaurants{}).Where("is_verify = true").Offset((page-1)*limit).Limit(limit).Select("title", "slug", "ID", "is_verify").Find(&restaurants).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
 	// Count the total number of restaurants
 	var elemCount int64
-	db.Model(&models.Restaurants{}).Where("IsVerify = ?", true).Count(&elemCount)
+	db.Model(&models.Restaurants{}).Where("is_verify = true").Count(&elemCount)
 
 	// Prepare the response data
 	data := map[string]interface{}{}
