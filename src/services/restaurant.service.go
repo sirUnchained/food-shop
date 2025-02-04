@@ -40,7 +40,7 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 	var restaurants []models.Restaurants
 
 	// Retrieve the restaurants with pagination
-	err = db.Model(&models.Restaurants{}).Where("is_verify = ?", true).Offset((page - 1) * limit).Limit(limit).Find(&restaurants).Error
+	err = db.Model(&models.Restaurants{}).Where("is_verify = ?", true).Offset((page-1)*limit).Limit(limit).Select("title", "slug").Find(&restaurants).Error
 	if err != nil {
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
@@ -58,6 +58,39 @@ func (us *RestaurantService) GetAll(ctx *gin.Context) *helpers.ResultResponse {
 
 	// Return success response
 	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "here you are.", Data: data}
+}
+
+func (us *RestaurantService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
+	var err error
+	var id int
+
+	id_str := ctx.Param("id")
+	if id, err = strconv.Atoi(id_str); err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
+
+	// Get the database connection
+	db := postgres.GetDb()
+	restaurant := new(models.Restaurants)
+
+	// Find the restaurant by ID
+	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
+	if restaurant.ID == 0 {
+		if err != nil {
+			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+		}
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "restaurant not found.", Data: nil}
+	}
+
+	restaurantStars := helpers.GetCalcRestaurantStars(int(restaurant.ID))
+	restaurantMap := map[string]interface{}{
+		"restaurant": restaurant,
+		"stars":      restaurantStars,
+	}
+
+	// Return success response with restaurant data
+	return &helpers.ResultResponse{Ok: true, Status: 200, Message: "restaurant found.", Data: restaurantMap}
+
 }
 
 func (us *RestaurantService) CreateRestaurant(ctx *gin.Context) *helpers.ResultResponse {

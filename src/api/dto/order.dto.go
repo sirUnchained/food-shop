@@ -7,5 +7,5 @@ type OrderDTO struct {
 }
 
 type ChangeStarDTO struct {
-	Stars uint `json:"stars" binding:"required,min=1,max=5"`
+	Stars int `json:"stars" binding:"required,min=1,max=5"`
 }

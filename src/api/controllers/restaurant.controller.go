@@ -25,6 +25,18 @@ func (rc *RestaurantController) GetAll(ctx *gin.Context) {
 	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
 }
 
+func (rc *RestaurantController) GetOne(ctx *gin.Context) {
+	rs := services.GetRestaurantService()
+
+	result := rs.GetOne(ctx)
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
+		return
+	}
+
+	helpers.SendResult(true, result.Status, result.Message, result.Data, ctx)
+}
+
 func (rc *RestaurantController) Create(ctx *gin.Context) {
 	rs := services.GetRestaurantService()
 
