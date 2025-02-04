@@ -18,7 +18,7 @@
   "jwt": {
     "accessSecret": "shhh_its_access_secret",
     "refreshSecret": "shhh_its_refresh_secret",
-    "accessTokenExpiresIn": 60,
+    "accessTokenExpiresIn": 5,
     "refreshTokenExpiresIn": 60
   }
 }

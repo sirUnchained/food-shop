@@ -22,12 +22,11 @@ func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
 
-	// set access token expiration time
-	newTokenDetails.AccessTokenExpiresIn = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Minute).Unix()
-
 	// create access token claims
 	atc := jwt.MapClaims{}
 	atc["id"] = user.ID
+	// set access token expiration time
+	atc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Second).Unix()
 
 	// generate access token
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
@@ -37,12 +36,11 @@ func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context
 		return nil, helpers.NewResultResponse(false, 500, "failed to create access token.", nil)
 	}
 
-	// set refresh token expiration time
-	newTokenDetails.RefreshTokenExpiresIn = time.Now().Add(time.Duration(cfg.Jwt.RefreshTokenExpiresIn) * time.Minute).Unix()
-
 	// create refresh token claims
 	rtc := jwt.MapClaims{}
 	rtc["id"] = user.ID
+	// set access refresh token expiration time
+	rtc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.RefreshTokenExpiresIn) * time.Hour).Unix()
 
 	// generate refresh token
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
