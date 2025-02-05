@@ -29,15 +29,8 @@ func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context
 		return nil, &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
-	// create refresh token claims
-	rtc := jwt.MapClaims{}
-	rtc["id"] = user.ID
-	// set access refresh token expiration time
-	rtc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.RefreshTokenExpiresIn) * time.Hour).Unix()
-
-	// generate refresh token
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
-	newTokenDetails.RefreshToken, err = refreshToken.SignedString([]byte(cfg.Jwt.RefreshSecret))
+	// call for refresh token
+	newTokenDetails.RefreshToken, err = generateRefreshToken(cfg, user)
 	if err != nil {
 		return nil, helpers.NewResultResponse(false, 500, "failed to create refresh token.", nil)
 	}
@@ -109,4 +102,19 @@ func generateAccessToken(cfg *configs.Configs, user *models.Users) (string, erro
 	return token_str, nil
 }
 
-func generateRefreshToken(user *models.Users, ctx *gin.Context) {}
+func generateRefreshToken(cfg *configs.Configs, user *models.Users) (string, error) {
+	// create refresh token claims
+	rtc := jwt.MapClaims{}
+	rtc["id"] = user.ID
+	// set access refresh token expiration time
+	rtc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.RefreshTokenExpiresIn) * time.Hour).Unix()
+
+	// generate refresh token
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)
+	token_str, err := refreshToken.SignedString([]byte(cfg.Jwt.RefreshSecret))
+	if err != nil {
+		return "", errors.New("failed to generate refresh token.")
+	}
+
+	return token_str, nil
+}
