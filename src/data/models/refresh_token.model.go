@@ -7,8 +7,8 @@ import (
 )
 
 type RefreshTokens struct {
-	ID        uint  `gorm:"primaryKey"`
-	Token     int64 `gorm:"unique"`
+	ID        uint   `gorm:"primaryKey"`
+	Token     string `gorm:"unique;type:varchar"`
 	UserID    uint
 	User      Users
 	CreatedAt time.Time `gorm:"index"`

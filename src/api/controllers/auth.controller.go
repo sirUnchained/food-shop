@@ -65,8 +65,13 @@ func (a *authController) Register(ctx *gin.Context) {
 func (a *authController) RefreshAccessToken(ctx *gin.Context) {
 	ts := services.GetTokenService()
 
-	ts.RefreshAccessToken(ctx)
+	result := ts.RefreshAccessToken(ctx)
+	if !result.Ok {
+		helpers.SendResult(false, result.Status, result.Message, nil, ctx)
+		return
+	}
 
+	helpers.SendResult(false, result.Status, result.Message, result.Data, ctx)
 }
 
 func (a *authController) GetMe(ctx *gin.Context) {

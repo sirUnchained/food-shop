@@ -13,4 +13,5 @@ func AuthRoutes(r *gin.RouterGroup) {
 	r.POST("/auth/login", controller.Login)
 	r.POST("/auth/register", controller.Register)
 	r.GET("/auth/me", middlewares.AuthorizeUser(), controller.GetMe)
+	r.POST("/auth/refresh", controller.RefreshAccessToken)
 }

@@ -2,11 +2,13 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"foodshop/api/dto"
 	"foodshop/api/helpers"
 	"foodshop/configs"
 	"foodshop/data/models"
 	"foodshop/data/postgres"
+	"math/rand"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +37,7 @@ func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context
 	if err != nil {
 		return nil, helpers.NewResultResponse(false, 500, "failed to create refresh token.", nil)
 	}
+	saveNewDeleteOldRefreshToken(newTokenDetails.RefreshToken, user)
 
 	return newTokenDetails, helpers.NewResultResponse(true, 201, "", nil)
 }
@@ -67,10 +70,11 @@ func (ts *TokenService) RefreshAccessToken(ctx *gin.Context) *helpers.ResultResp
 		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
-	// remember to remove old refresh token from db
-	db.Model(&models.RefreshTokens{}).Delete(refreshTokenData)
+	// save new delete old refresh token
+	saveNewDeleteOldRefreshToken(newTokenDetails.RefreshToken, &refreshTokenData.User)
+	fmt.Printf("%+v\n", newTokenDetails)
 
-	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "", Data: newTokenDetails}
+	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "here your refreshed tokens !", Data: newTokenDetails}
 
 }
 
@@ -126,7 +130,7 @@ func generateAccessToken(cfg *configs.Configs, user *models.Users) (string, erro
 	atc := jwt.MapClaims{}
 	atc["id"] = user.ID
 	// set access token expiration time
-	atc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Second).Unix()
+	atc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Minute).Unix()
 
 	// generate access token
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
@@ -139,17 +143,9 @@ func generateAccessToken(cfg *configs.Configs, user *models.Users) (string, erro
 }
 
 func generateRefreshToken(cfg *configs.Configs) (string, error) {
-	var count int64
-	db := postgres.GetDb()
-
-	err := db.Model(&models.RefreshTokens{}).Count(&count).Error
-	if err != nil {
-		return "", errors.New("failed to generate refresh token.")
-	}
-
 	// create refresh token claims
 	rtc := jwt.MapClaims{}
-	rtc["token"] = count + 1
+	rtc["token"] = rand.Intn(500)
 	// set access refresh token expiration time
 	rtc["exp"] = time.Now().Add(time.Hour * 24 * time.Duration(cfg.Jwt.RefreshTokenExpiresIn)).Unix()
 
@@ -161,4 +157,19 @@ func generateRefreshToken(cfg *configs.Configs) (string, error) {
 	}
 
 	return token_str, nil
+}
+
+func saveNewDeleteOldRefreshToken(token string, user *models.Users) {
+	var newToken models.RefreshTokens
+	newToken.Token = token
+	newToken.UserID = user.ID
+
+	var oldToken models.RefreshTokens
+
+	db := postgres.GetDb()
+	// delelte old one
+	db.Model(&models.RefreshTokens{}).Where("user_id = ?", user.ID).First(&oldToken)
+	db.Delete(&oldToken)
+	// create new one
+	db.Model(&models.RefreshTokens{}).Create(&newToken)
 }
