@@ -21,19 +21,12 @@ func GetTokenService() *TokenService {
 func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context) (*dto.TokenDetailDTO, *helpers.ResultResponse) {
 	cfg := configs.GetConfigs()
 	newTokenDetails := &dto.TokenDetailDTO{}
-
-	// create access token claims
-	atc := jwt.MapClaims{}
-	atc["id"] = user.ID
-	// set access token expiration time
-	atc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Second).Unix()
-
-	// generate access token
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
 	var err error
-	newTokenDetails.AccessToken, err = accessToken.SignedString([]byte(cfg.Jwt.AccessSecret))
+
+	// call for access token
+	newTokenDetails.AccessToken, err = generateAccessToken(cfg, user)
 	if err != nil {
-		return nil, helpers.NewResultResponse(false, 500, "failed to create access token.", nil)
+		return nil, &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
 	}
 
 	// create refresh token claims
@@ -98,3 +91,22 @@ func (ts *TokenService) GetTokenClaims(token string) (*dto.TokenData, *helpers.R
 	return claimsResult, helpers.NewResultResponse(true, 200, "", nil)
 
 }
+
+func generateAccessToken(cfg *configs.Configs, user *models.Users) (string, error) {
+	// create access token claims
+	atc := jwt.MapClaims{}
+	atc["id"] = user.ID
+	// set access token expiration time
+	atc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.AccessTokenExpiresIn) * time.Second).Unix()
+
+	// generate access token
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, atc)
+	token_str, err := accessToken.SignedString([]byte(cfg.Jwt.AccessSecret))
+	if err != nil {
+		return "", errors.New("failed to create token.")
+	}
+
+	return token_str, nil
+}
+
+func generateRefreshToken(user *models.Users, ctx *gin.Context) {}
