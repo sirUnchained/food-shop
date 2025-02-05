@@ -1,11 +1,15 @@
 # Food Shop
 
+![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+
 Welcome to the Food Shop project! This project is a simple web application built using Golang that allows users to browse and purchase food items.
 
 ## Features
 
 - Browse a variety of food items
 - User authentication and authorization
+- Giving stars for each order
+- 5 minutes access token 30 days refresh token
 
 ## Installation
 
