@@ -6,6 +6,7 @@ import (
 	"foodshop/api/helpers"
 	"foodshop/configs"
 	"foodshop/data/models"
+	"foodshop/data/postgres"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,12 +31,47 @@ func (ts *TokenService) GenerateTokenDetail(user *models.Users, ctx *gin.Context
 	}
 
 	// call for refresh token
-	newTokenDetails.RefreshToken, err = generateRefreshToken(cfg, user)
+	newTokenDetails.RefreshToken, err = generateRefreshToken(cfg)
 	if err != nil {
 		return nil, helpers.NewResultResponse(false, 500, "failed to create refresh token.", nil)
 	}
 
 	return newTokenDetails, helpers.NewResultResponse(true, 201, "", nil)
+}
+
+func (ts *TokenService) RefreshAccessToken(ctx *gin.Context) *helpers.ResultResponse {
+	var rtDto dto.RefreshTokenDTO
+	cfg := configs.GetConfigs()
+
+	err := ctx.ShouldBindBodyWithJSON(&rtDto)
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 400, Message: "you'r refresh token is no more valid, please sign in again.", Data: nil}
+	}
+
+	// search in db try to find access token we got from client, if nothing found then user must login again
+	refreshTokenData := new(models.RefreshTokens)
+	db := postgres.GetDb()
+	db.Model(&models.RefreshTokens{}).Where("token = ?", rtDto.RefreshToken).Preload("User").First(refreshTokenData)
+	if refreshTokenData.ID == 0 {
+		return &helpers.ResultResponse{Ok: false, Status: 404, Message: "please sign in or sign up first.", Data: nil}
+	}
+
+	// if the refresh token found in db, done we can create a new access token and refresh token
+	var newTokenDetails dto.TokenDetailDTO
+	newTokenDetails.AccessToken, err = generateAccessToken(cfg, &refreshTokenData.User)
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+	newTokenDetails.RefreshToken, err = generateRefreshToken(cfg)
+	if err != nil {
+		return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
+	}
+
+	// remember to remove old refresh token from db
+	db.Model(&models.RefreshTokens{}).Delete(refreshTokenData)
+
+	return &helpers.ResultResponse{Ok: true, Status: 201, Message: "", Data: newTokenDetails}
+
 }
 
 func (ts *TokenService) VerifyToken(token string) (*jwt.Token, *helpers.ResultResponse) {
@@ -102,12 +138,20 @@ func generateAccessToken(cfg *configs.Configs, user *models.Users) (string, erro
 	return token_str, nil
 }
 
-func generateRefreshToken(cfg *configs.Configs, user *models.Users) (string, error) {
+func generateRefreshToken(cfg *configs.Configs) (string, error) {
+	var count int64
+	db := postgres.GetDb()
+
+	err := db.Model(&models.RefreshTokens{}).Count(&count).Error
+	if err != nil {
+		return "", errors.New("failed to generate refresh token.")
+	}
+
 	// create refresh token claims
 	rtc := jwt.MapClaims{}
-	rtc["id"] = user.ID
+	rtc["token"] = count + 1
 	// set access refresh token expiration time
-	rtc["exp"] = time.Now().Add(time.Duration(cfg.Jwt.RefreshTokenExpiresIn) * time.Hour).Unix()
+	rtc["exp"] = time.Now().Add(time.Hour * 24 * time.Duration(cfg.Jwt.RefreshTokenExpiresIn)).Unix()
 
 	// generate refresh token
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtc)

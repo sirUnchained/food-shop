@@ -38,20 +38,6 @@ func (a *authController) Login(ctx *gin.Context) {
 	tokens["accessToken"] = tokenDetail.AccessToken
 	tokens["refreshToken"] = tokenDetail.RefreshToken
 	helpers.SendResult(true, 200, "you are now authorized.", tokens, ctx)
-
-	// jwtToken, err := ts.VerifyToken(res.AccessToken)
-	// if err != nil {
-	// 	helpers.SendResult(false, 400, err.Error(), nil, ctx)
-	// 	return
-	// }
-
-	// tokenClaim, err := ts.GetTokenClaims(res.AccessToken)
-	// if err != nil {
-	// 	helpers.SendResult(false, 400, err.Error(), nil, ctx)
-	// 	return
-	// }
-	// fmt.Printf("%+v\n", tokenClaim)
-
 }
 
 func (a *authController) Register(ctx *gin.Context) {
@@ -74,6 +60,12 @@ func (a *authController) Register(ctx *gin.Context) {
 	tokens["accessToken"] = tokenDetail.AccessToken
 	tokens["refreshToken"] = tokenDetail.RefreshToken
 	helpers.SendResult(true, 200, "you are now authorized.", tokens, ctx)
+}
+
+func (a *authController) RefreshAccessToken(ctx *gin.Context) {
+	ts := services.GetTokenService()
+
+	ts.RefreshAccessToken(ctx)
 
 }
 

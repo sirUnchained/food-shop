@@ -21,6 +21,10 @@ type TokenDetailDTO struct {
 	RefreshTokenExpiresIn int64
 }
 
+type RefreshTokenDTO struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type TokenData struct {
 	Id int
 }
