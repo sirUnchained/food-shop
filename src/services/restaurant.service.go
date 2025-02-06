@@ -74,7 +74,7 @@ func (us *RestaurantService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
 	restaurant := new(models.Restaurants)
 
 	// Find the restaurant by ID
-	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).First(restaurant).Error
+	err = db.Model(&models.Restaurants{}).Where("ID = ?", id).Preload("Foods").First(restaurant).Error
 	if restaurant.ID == 0 {
 		if err != nil {
 			return &helpers.ResultResponse{Ok: false, Status: 500, Message: err.Error(), Data: nil}
@@ -84,8 +84,15 @@ func (us *RestaurantService) GetOne(ctx *gin.Context) *helpers.ResultResponse {
 
 	restaurantStars := helpers.GetCalcRestaurantStars(int(restaurant.ID))
 	restaurantMap := map[string]interface{}{
-		"restaurant": restaurant,
-		"stars":      restaurantStars,
+		"id":          restaurant.ID,
+		"address":     restaurant.Address,
+		"description": restaurant.Description,
+		"title":       restaurant.Title,
+		"slug":        restaurant.Slug,
+		"foods":       restaurant.Foods,
+		"createdAt":   restaurant.CreatedAt,
+		"category_id": restaurant.CategoryID,
+		"stars":       restaurantStars,
 	}
 
 	// Return success response with restaurant data
